@@ -1,0 +1,138 @@
+.season-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.season-card:hover {
+  transform: translateY(-4px);
+}
+
+.season-card--watching {
+  border-color: #4ade80;
+}
+
+.season-card--favorite {
+  border-color: #f4a261;
+}
+
+.season-card--watching.season-card--favorite {
+  border-color: #f4a261;
+  box-shadow: 0 0 12px rgba(244, 162, 97, 0.3);
+}
+
+/* Poster */
+.season-card__poster {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2/3;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.season-card__poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.season-card:hover .season-card__poster img {
+  transform: scale(1.05);
+}
+
+/* Overlay */
+.season-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.season-card:hover .season-card__overlay {
+  opacity: 1;
+}
+
+.season-card__btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  width: 80%;
+  text-align: center;
+}
+
+.season-card__btn:hover {
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.04);
+}
+
+.season-card__btn.active-watching {
+  background: rgba(74, 222, 128, 0.3);
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+.season-card__btn.active-favorite {
+  background: rgba(244, 162, 97, 0.3);
+  border-color: #f4a261;
+  color: #f4a261;
+}
+
+/* Badges */
+.season-card__badges {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.badge--watching {
+  background: #4ade80;
+  color: #000;
+}
+
+.badge--favorite {
+  background: #f4a261;
+  color: #000;
+}
+
+/* Info */
+.season-card__info {
+  padding: 0.6rem 0.5rem;
+}
+
+.season-card__title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
