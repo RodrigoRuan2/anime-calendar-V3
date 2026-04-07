@@ -1,66 +1,133 @@
 # ⛩ Anime Calendar
 
-Calendário semanal de animes com horário de exibição e plataformas de streaming, construído com **React + Vite** e a [AnimeSchedule.net API](https://animeschedule.net/api/v3/documentation).
+Aplicação web para acompanhar os lançamentos semanais de animes e visualizar a grade da temporada atual — com suporte a favoritos, status de assistindo e muito mais.
+
+🔗 **[Acesse o projeto ao vivo](https://RodrigoRuan2.github.io/anime-calendar-V3/)**
 
 ---
 
-## 🚀 Como rodar
+## 📌 Funcionalidades
 
-### 1. Instale as dependências
-```bash
-npm install
+- 📅 **Calendário semanal** — visualize os animes organizados por dia da semana com horário de lançamento
+- 🎌 **Grade da temporada** — listagem completa dos animes em exibição na temporada atual
+- ⭐ **Favoritos** — marque seus animes favoritos e acompanhe pelo sidebar
+- 👁 **Assistindo** — registre quais animes você está acompanhando
+- 🔁 **Retry automático** — tratamento de rate limit com retry inteligente na API do Jikan
+- 🔒 **Chave de API protegida** — integração segura via Supabase Edge Functions
+
+---
+
+## 🛠 Tecnologias
+
+- [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
+- [Axios](https://axios-http.com/)
+- [AnimeSchedule.net API v3](https://animeschedule.net/) — cronograma semanal
+- [Jikan API v4](https://jikan.moe/) — dados da temporada atual
+- [Supabase Edge Functions](https://supabase.com/docs/guides/functions) — proxy seguro para esconder a API key
+- [GitHub Pages](https://pages.github.com/) — deploy estático
+
+---
+
+## 🔒 Segurança
+
+A chave da API do AnimeSchedule **nunca é exposta no frontend**. O fluxo de requisição funciona assim:
+
+```
+React (GitHub Pages) → Supabase Edge Function → AnimeSchedule API
 ```
 
-### 2. Configure a API key
-Copie o arquivo de exemplo e preencha sua chave:
-```bash
-cp .env.example .env
-```
-
-Edite o `.env`:
-```
-VITE_ANIMESCHEDULE_API_KEY=sua_api_key_aqui
-```
-
-> Obtenha sua API key gratuita em: `https://animeschedule.net/users/SEU_USUARIO/settings/api`
-
-### 3. Rode o projeto
-```bash
-npm run dev
-```
+A chave fica armazenada nos **Supabase Secrets** e só é acessada pelo servidor da Edge Function.
 
 ---
 
 ## 📁 Estrutura do projeto
 
 ```
-src/
-├── components/
-│   ├── Calendar.jsx      # Grid semanal com os 7 dias
-│   ├── DayColumn.jsx     # Coluna de um dia com lista de animes
-│   └── AnimeCard.jsx     # Card individual de cada anime
-├── hooks/
-│   └── useAnimeSchedule.js   # Hook customizado para buscar dados
-├── services/
-│   └── animeScheduleApi.js   # Configuração e chamadas à API
-├── App.jsx
-└── App.css               # Estilos globais (tema dark anime)
+anime-calendar-V3/
+├── public/
+├── src/
+│   ├── components/       # Componentes React (Calendar, SeasonGrid, Sidebar...)
+│   ├── hooks/            # Custom hooks (useAnimeSchedule, useSeasonAnime, useAnimeStatus)
+│   ├── services/         # Camada de API (animeScheduleApi.js)
+│   ├── styles/           # Arquivos CSS separados por componente
+│   ├── utils/            # Funções utilitárias (animeKey.js)
+│   ├── App.jsx
+│   └── main.jsx
+├── supabase/
+│   └── functions/
+│       └── anime-schedule-proxy/  # Edge Function (proxy seguro)
+│           └── index.ts
+├── .gitignore
+├── package.json
+└── vite.config.js
 ```
 
 ---
 
-## ✅ Funcionalidades atuais
-- [x] Calendário semanal (segunda → domingo)
-- [x] Horário de exibição no fuso do usuário
-- [x] Episódio atual
-- [x] Links para plataformas (Crunchyroll, Netflix, etc.)
-- [x] Destaque no dia de hoje
-- [x] Loading e tratamento de erro
-- [x] Responsivo (mobile, tablet, desktop)
+## 🚀 Como rodar localmente
 
-## 💡 Melhorias futuras
-- [ ] Filtro por plataforma (só Crunchyroll, só Netflix...)
-- [ ] Busca de anime por nome
-- [ ] Favoritar animes (localStorage)
-- [ ] Notificações de novo episódio
-- [ ] Modo claro / escuro
+### Pré-requisitos
+
+- Node.js 18+
+- Conta no [Supabase](https://supabase.com/) com uma Edge Function configurada
+- Chave de API do [AnimeSchedule.net](https://animeschedule.net/)
+
+### Passos
+
+```bash
+# Clone o repositório
+git clone https://github.com/RodrigoRuan2/anime-calendar-V3.git
+cd anime-calendar-V3
+
+# Instale as dependências
+npm install
+
+# Crie o arquivo .env na raiz
+echo "VITE_SUPABASE_FUNCTION_URL=https://SEU_PROJETO.supabase.co/functions/v1/anime-schedule-proxy" > .env
+
+# Rode o projeto
+npm run dev
+```
+
+### Deploy
+
+```bash
+npm run build
+npm run deploy
+```
+
+---
+
+## ⚙️ Configuração do Supabase
+
+1. Crie um projeto no [Supabase](https://supabase.com/)
+2. Instale o CLI: veja as [instruções oficiais](https://github.com/supabase/cli#install-the-cli)
+3. Faça login e linke o projeto:
+
+```bash
+supabase login
+supabase link --project-ref SEU_PROJECT_REF
+```
+
+4. Adicione a chave como secret:
+
+```bash
+supabase secrets set ANIMESCHEDULE_API_KEY=sua_chave_aqui
+```
+
+5. Faça o deploy da Edge Function:
+
+```bash
+supabase functions deploy anime-schedule-proxy
+```
+
+6. No dashboard do Supabase, desative a **JWT verification** na função para torná-la pública.
+
+---
+
+## 👨‍💻 Autor
+
+Feito por **Rodrigo Ruan** — estudante de Análise e Desenvolvimento de Sistemas, desenvolvedor front-end em formação.
+
+- GitHub: [@RodrigoRuan2](https://github.com/RodrigoRuan2)
+- Email: ruancamisaazul@gmail.com
