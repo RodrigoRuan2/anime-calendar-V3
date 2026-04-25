@@ -23,19 +23,32 @@ function delay(ms) {
 }
 
 // 🎌 Temporada atual com retry em caso de 429
-export async function getSeasonAnime(page = 1, retries = 3) {
-  const month = new Date().getMonth() + 1
+export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = 3) {
+  const currentDate = new Date()
+  const month = currentDate.getMonth() + 1
+  const year = currentDate.getFullYear()
+
+  // 🔥 CÁLCULO DA TEMPORADA COM OFFSET
+  let targetMonth = month
+  let targetYear = year
+
+  // Adiciona meses baseado no offset
+  targetMonth += seasonOffset * 3
+
+  // Ajusta ano se necessário
+  while (targetMonth > 12) {
+    targetMonth -= 12
+    targetYear += 1
+  }
 
   let season = ''
-  if (month <= 3) season = 'winter'
-  else if (month <= 6) season = 'spring'
-  else if (month <= 9) season = 'summer'
+  if (targetMonth <= 3) season = 'winter'
+  else if (targetMonth <= 6) season = 'spring'
+  else if (targetMonth <= 9) season = 'summer'
   else season = 'fall'
 
-  const year = new Date().getFullYear()
-
   try {
-    const response = await jikanApi.get(`/seasons/${year}/${season}`, {
+    const response = await jikanApi.get(`/seasons/${targetYear}/${season}`, {
       params: { page },
     })
 
@@ -53,7 +66,7 @@ export async function getSeasonAnime(page = 1, retries = 3) {
 
     const filtered = unique.filter(
       (anime) =>
-        anime.status === 'Currently Airing' &&
+        (seasonOffset === 0 ? anime.status === 'Currently Airing' : anime.status === 'Not yet aired') &&
         anime.type !== 'Music'
     )
 
@@ -65,7 +78,7 @@ export async function getSeasonAnime(page = 1, retries = 3) {
     if (error.response?.status === 429 && retries > 0) {
       const waitTime = 1000 * (4 - retries)
       await delay(waitTime)
-      return getSeasonAnime(page, retries - 1)
+      return getSeasonAnime(page, seasonOffset, retries - 1)
     }
 
     throw error

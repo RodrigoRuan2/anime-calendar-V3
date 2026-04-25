@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getSeasonAnime } from '../services/animeScheduleApi'
 
-export function useSeasonAnime() {
+export function useSeasonAnime(seasonOffset = 0) {
   const [animes, setAnimes] = useState([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
@@ -9,15 +9,21 @@ export function useSeasonAnime() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetchPage(1)
-  }, [])
+    // 🔥 RESETA O ESTADO QUANDO MUDA A TEMPORADA
+    setAnimes([])
+    setPage(1)
+    setHasMore(true)
+    setLoading(true)
+    setError(null)
+    fetchPage(1, seasonOffset)
+  }, [seasonOffset])
 
-  async function fetchPage(pageNumber) {
+  async function fetchPage(pageNumber, offset = seasonOffset) {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await getSeasonAnime(pageNumber)
+      const res = await getSeasonAnime(pageNumber, offset)
 
       setAnimes((prev) => {
         const map = new Map()
@@ -46,7 +52,7 @@ export function useSeasonAnime() {
 
   function loadMore() {
     if (hasMore && !loading) {
-      fetchPage(page + 1)
+      fetchPage(page + 1, seasonOffset)
     }
   }
 

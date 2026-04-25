@@ -1,5 +1,5 @@
 import { useSeasonAnime } from '../hooks/useSeasonAnime'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SeasonCard from './SeasonCard'
 import '../styles/SeasonGrid.css'
 
@@ -15,7 +15,8 @@ export default function SeasonGrid({
   onToggle,
   getStatus
 }) {
-  const { animes, loading, loadMore, hasMore, error } = useSeasonAnime()
+  const [isNextSeason, setIsNextSeason] = useState(false)
+  const { animes, loading, loadMore, hasMore, error } = useSeasonAnime(isNextSeason ? 1 : 0)
 
   const loadMoreRef = useRef(null)
 
@@ -61,6 +62,26 @@ export default function SeasonGrid({
 
   return (
     <div className="season-grid-wrapper">
+      {/* 🔥 HEADER COM CONTROLE DE TEMPORADA */}
+      <div className="season-header">
+        <div className="season-title">
+          <h2>
+            {isNextSeason ? 'Próxima Temporada' : 'Temporada Atual'}
+          </h2>
+        </div>
+
+        <button
+          className="season-toggle-btn"
+          onClick={() => setIsNextSeason(!isNextSeason)}
+          aria-label={isNextSeason ? 'Voltar para temporada atual' : 'Ver próxima temporada'}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M7 8L10 11L13 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          {isNextSeason ? 'Temporada Atual' : 'Próxima Temporada'}
+        </button>
+      </div>
+
       <div className="season-filters">
         {FILTERS.map((f) => (
           <button

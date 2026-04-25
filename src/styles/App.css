@@ -32,7 +32,7 @@ body {
 .app {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 2.5rem 2rem;
+  padding: 1rem 1rem;
 }
 
 /* ── Header ────────────────────────────────────────────────── */
@@ -71,192 +71,6 @@ body {
   letter-spacing: 0.04em;
 }
 
-/* ── Calendário ────────────────────────────────────────────── */
-.calendar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  align-items: start;
-}
-
-@media (max-width: 1200px) { .calendar { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 768px)  { .calendar { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px)  { .calendar { grid-template-columns: 1fr; } }
-
-/* ── Coluna de dia ─────────────────────────────────────────── */
-.day-column {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.day-column--today {
-  border-color: var(--today-border);
-  box-shadow: 0 0 24px var(--today-glow);
-}
-
-.day-column__header {
-  padding: 1rem 1.25rem;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.day-column--today .day-column__header {
-  background: rgba(230, 57, 70, 0.07);
-}
-
-.day-column__name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.3rem;
-  letter-spacing: 0.1em;
-}
-
-.day-column__today-badge {
-  display: inline-block;
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0.2rem 0.55rem;
-  border-radius: 4px;
-  width: fit-content;
-}
-
-.day-column__count {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-
-.day-column__list {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.day-column__empty {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 1.5rem 0;
-  font-style: italic;
-}
-
-/* ── AnimeCard ─────────────────────────────────────────────── */
-.anime-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.75rem;
-  transition: background 0.2s, transform 0.15s, border-color 0.2s;
-  cursor: default;
-}
-
-.anime-card:hover {
-  background: var(--bg-card-hover);
-  border-color: rgba(255,255,255,0.13);
-  transform: translateY(-2px);
-}
-
-.anime-card__poster {
-  width: 100%;
-  height: 120px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: var(--bg-secondary);
-  flex-shrink: 0;
-}
-
-.anime-card__poster img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
-}
-
-.anime-card__poster--placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: var(--text-muted);
-}
-
-.anime-card__info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.anime-card__title {
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--text-primary);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.anime-card__meta {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.anime-card__time {
-  font-size: 0.72rem;
-  color: var(--accent-2);
-  font-weight: 600;
-}
-
-.anime-card__episode {
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  background: var(--bg-secondary);
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-}
-
-/* ── Plataformas ───────────────────────────────────────────── */
-.anime-card__platforms {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.2rem;
-}
-
-.anime-card__platform-badge {
-  font-size: 0.62rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #fff;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  text-decoration: none;
-  opacity: 0.88;
-  transition: opacity 0.15s, transform 0.15s;
-}
-
-.anime-card__platform-badge:hover {
-  opacity: 1;
-  transform: translateY(-1px);
-}
-
 /* ── Loading / Erro ────────────────────────────────────────── */
 .calendar-status {
   display: flex;
@@ -287,11 +101,19 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Abas ──────────────────────────────────────────────────── */
+.app-tabs-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
 .app-tabs {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 1.5rem;
 }
 
 .app-tab {
@@ -320,7 +142,6 @@ body {
 }
 
 .sidebar-toggle-btn {
-  display: none;
   border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-primary);
@@ -339,39 +160,6 @@ body {
 
 .app-main {
   margin-top: 2rem;
-}
-
-/* ── Abas ──────────────────────────────────────────────────── */
-.app-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-}
-
-.app-tab {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-family: 'Noto Sans JP', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.55rem 1.4rem;
-  border-radius: 99px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.app-tab:hover {
-  color: var(--text-primary);
-  border-color: rgba(255,255,255,0.15);
-}
-
-.app-tab--active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 16px var(--accent-glow);
 }
 
 /* ── Layout com sidebar ────────────────────────────────────── */
@@ -399,4 +187,14 @@ body {
   .app-main {
     width: 100%;
   }
+}
+
+.today-banner {
+  margin-top: 10px;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #ff4d4d, #ff7a7a);
+  border-radius: 12px;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
 }
