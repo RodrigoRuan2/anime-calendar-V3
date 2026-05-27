@@ -12,7 +12,6 @@ const DAYS = [
   { key: 'sunday',    label: 'Domingo' },
 ]
 
-// 🔥 MAPEAMENTO CORRETO DO JS → API
 const WEEK_MAP = {
   0: 'sunday',
   1: 'monday',
@@ -29,9 +28,10 @@ export default function Calendar({
   error,
   onToggle,
   getStatus,
-  today, // 👈 vindo do App
+  today,
   isNextWeek,
-  setIsNextWeek
+  setIsNextWeek,
+  onAnimeClick,
 }) {
   const [activeDayIndex, setActiveDayIndex] = useState(null)
   const calendarRef = useRef(null)
@@ -39,7 +39,6 @@ export default function Calendar({
   const currentDate = new Date()
   const todayKey = WEEK_MAP[today]
 
-  // 🔥 CÁLCULO DA SEMANA (ATUAL OU PRÓXIMA)
   const targetDate = new Date(currentDate)
   if (isNextWeek) {
     targetDate.setDate(targetDate.getDate() + 7) // Adiciona 7 dias
@@ -56,24 +55,18 @@ export default function Calendar({
     return date
   })
 
-  // Encontrar índice do dia atual (só se for semana atual)
   const todayIndex = isNextWeek ? null : DAYS.findIndex(d => d.key === todayKey)
 
-  // 🔥 SCROLL AUTOMÁTICO PRO DIA ATUAL (SÓ NA SEMANA ATUAL)
   useEffect(() => {
-    if (!isNextWeek) {
-      const el = document.querySelector('.day-column--today')
-      if (el) {
-        el.scrollIntoView({
-          behavior: 'smooth',
-          inline: 'center',
-          block: 'nearest'
-        })
-      }
+    if (!isNextWeek && calendarRef.current && todayIndex !== null) {
+      const cardWidth = calendarRef.current.offsetWidth
+      calendarRef.current.scrollTo({
+        left: cardWidth * todayIndex,
+        behavior: 'smooth',
+      })
     }
-  }, [todayKey, isNextWeek])
+  }, [todayIndex, isNextWeek])
 
-  // 🔥 DETECTOR DE SCROLL PARA PAGINAÇÃO
   useEffect(() => {
     const handleScroll = () => {
       if (!calendarRef.current) return
@@ -90,7 +83,6 @@ export default function Calendar({
     const calendar = calendarRef.current
     if (calendar) {
       calendar.addEventListener('scroll', handleScroll)
-      // Set inicial baseado na semana
       setActiveDayIndex(isNextWeek ? 0 : todayIndex)
       return () => calendar.removeEventListener('scroll', handleScroll)
     }
@@ -116,7 +108,6 @@ export default function Calendar({
 
   return (
     <div className="calendar-container">
-      {/* 🔥 HEADER COM CONTROLE DE SEMANA */}
       <div className="calendar-header">
         <div className="calendar-title">
           <h2>
@@ -146,20 +137,20 @@ export default function Calendar({
               key={key}
               day={label}
               dayKey={key}
-              dateLabel={weekDates[index].toLocaleDateString('en-US', {
+              dateLabel={weekDates[index].toLocaleDateString('pt-BR', {
                 day: '2-digit',
                 month: 'short'
               }).toUpperCase()}
               animes={schedule[key] || []}
               onToggle={onToggle}
               getStatus={getStatus}
-              isToday={!isNextWeek && key === todayKey} // 🔥 SÓ MARCA HOJE NA SEMANA ATUAL
+              isToday={!isNextWeek && key === todayKey}
+              onAnimeClick={onAnimeClick}
               className={`day-column--${key}`}
             />
           ))}
         </div>
 
-        {/* 📍 PAGINAÇÃO - MOSTRAR SÓ NO CELULAR */}
         <div className="calendar-pagination">
           {DAYS.map((day, index) => (
             <button

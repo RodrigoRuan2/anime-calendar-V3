@@ -13,14 +13,14 @@ export default function SeasonGrid({
   activeFilter,
   onFilterChange,
   onToggle,
-  getStatus
+  getStatus,
+  onAnimeClick,
 }) {
   const [isNextSeason, setIsNextSeason] = useState(false)
   const { animes, loading, loadMore, hasMore, error } = useSeasonAnime(isNextSeason ? 1 : 0)
 
   const loadMoreRef = useRef(null)
 
-  // 🔥 AUTO LOAD (scroll infinito)
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -62,7 +62,6 @@ export default function SeasonGrid({
 
   return (
     <div className="season-grid-wrapper">
-      {/* 🔥 HEADER COM CONTROLE DE TEMPORADA */}
       <div className="season-header">
         <div className="season-title">
           <h2>
@@ -110,19 +109,18 @@ export default function SeasonGrid({
               anime={anime}
               status={getStatus(anime)}
               onToggle={onToggle}
+              onClick={onAnimeClick}
             />
           ))}
         </div>
       )}
 
-      {/* 🔘 BOTÃO (fallback) */}
       {hasMore && (
         <button className="season-load-more" onClick={loadMore}>
           Carregar mais
         </button>
       )}
 
-      {/* 🔥 TRIGGER DO SCROLL AUTOMÁTICO */}
       <div ref={loadMoreRef} style={{ height: '20px' }} />
     </div>
   )

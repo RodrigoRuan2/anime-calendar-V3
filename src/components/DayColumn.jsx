@@ -8,14 +8,12 @@ export default function DayColumn({
   animes = [],
   onToggle,
   getStatus,
-  isToday, // 👈 AGORA VEM DO CALENDAR
+  isToday,
+  onAnimeClick,
   className = ''
 }) {
-
   return (
     <div className={`day-column ${isToday ? 'day-column--today' : ''} ${className}`}>
-      
-      {/* 🔥 HEADER MELHORADO */}
       <div className="day-column__header">
         <div className="day-column__top">
           <span className="day-column__date">{dateLabel}</span>
@@ -26,27 +24,21 @@ export default function DayColumn({
 
         <div className="day-column__title">
           <span className="day-column__name">{day}</span>
-
-          {isToday && (
-            <span className="day-column__today-badge">
-            </span>
-          )}
+          {isToday && <span className="day-column__today-badge" />}
         </div>
       </div>
 
-      {/* 📺 LISTA */}
       <div className="day-column__list">
         {animes.length === 0 ? (
-          <p className="day-column__empty">
-            Nenhum anime hoje
-          </p>
+          <p className="day-column__empty">Nenhum anime hoje</p>
         ) : (
           animes.map((anime, index) => (
             <AnimeCard
-              key={anime.route || anime.mal_id || index}
+              key={anime.route || anime.mal_id || `${anime.title}-${index}`}
               anime={anime}
               status={getStatus(anime)}
               onToggle={onToggle}
+              onClick={onAnimeClick}
             />
           ))
         )}

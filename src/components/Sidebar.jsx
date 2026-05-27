@@ -10,90 +10,93 @@ export default function Sidebar({ allAnimes, statusMap, onToggle, isOpen, onClos
 
   return (
     <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
-      {onClose && (
-        <button
-          className="sidebar__close"
-          type="button"
-          onClick={onClose}
-          aria-label="Fechar sidebar"
-        >
-          ✕
-        </button>
-      )}
-      <div className="sidebar__section">
-        <h2 className="sidebar__title">
-          <span className="sidebar__icon sidebar__icon--watching">▶</span>
-          Assistindo
-          <span className="sidebar__badge">{watching.length}</span>
-        </h2>
-
-        {watching.length === 0 ? (
-          <p className="sidebar__empty">Nenhum anime marcado</p>
-        ) : (
-          <ul className="sidebar__list">
-            {watching.map((anime) => (
-              <SidebarItem
-                key={getAnimeKey(anime)}
-                anime={anime}
-                field="watching"
-                onToggle={onToggle}
-              />
-            ))}
-          </ul>
+      <div className="sidebar__header">
+        <span className="sidebar__header-title">⛩ Minha Lista</span>
+        {onClose && (
+          <button
+            className="sidebar__close"
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar sidebar"
+          >
+            ✕
+          </button>
         )}
       </div>
 
-      <div className="sidebar__divider" />
+      <div className="sidebar__content">
+        <div className="sidebar__section">
+          <h2 className="sidebar__title">
+            <span className="sidebar__icon sidebar__icon--watching">▶</span>
+            Assistindo
+            <span className="sidebar__count">{watching.length}</span>
+          </h2>
 
-      <div className="sidebar__section">
-        <h2 className="sidebar__title">
-          <span className="sidebar__icon sidebar__icon--favorite">★</span>
-          Favoritos
-          <span className="sidebar__badge">{favorites.length}</span>
-        </h2>
+          {watching.length === 0 ? (
+            <p className="sidebar__empty">Nenhum anime marcado</p>
+          ) : (
+            <ul className="sidebar__list">
+              {watching.map((anime) => (
+                <SidebarItem
+                  key={getAnimeKey(anime)}
+                  anime={anime}
+                  field="watching"
+                  onToggle={onToggle}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
 
-        {favorites.length === 0 ? (
-          <p className="sidebar__empty">Nenhum favorito ainda</p>
-        ) : (
-          <ul className="sidebar__list">
-            {favorites.map((anime) => (
-              <SidebarItem
-                key={getAnimeKey(anime)}
-                anime={anime}
-                field="favorite"
-                onToggle={onToggle}
-              />
-            ))}
-          </ul>
-        )}
+        <div className="sidebar__divider" />
+
+        <div className="sidebar__section">
+          <h2 className="sidebar__title">
+            <span className="sidebar__icon sidebar__icon--favorite">★</span>
+            Favoritos
+            <span className="sidebar__count">{favorites.length}</span>
+          </h2>
+
+          {favorites.length === 0 ? (
+            <p className="sidebar__empty">Nenhum favorito ainda</p>
+          ) : (
+            <ul className="sidebar__list">
+              {favorites.map((anime) => (
+                <SidebarItem
+                  key={getAnimeKey(anime)}
+                  anime={anime}
+                  field="favorite"
+                  onToggle={onToggle}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </aside>
   )
 }
 
-// Item individual
 function SidebarItem({ anime, field, onToggle }) {
+  const imgSrc =
+    anime.images?.jpg?.image_url ||
+    (anime.imageVersionRoute ? `${IMAGE_BASE}${anime.imageVersionRoute}` : FALLBACK)
+
   return (
     <li className="sidebar__item">
       <img
         className="sidebar__item-img"
-        src={
-          anime.images?.jpg?.image_url ||
-          (anime.imageVersionRoute ? `${IMAGE_BASE}${anime.imageVersionRoute}` : FALLBACK)
-        }
+        src={imgSrc}
         alt={anime.title}
-        onError={(e) => {
-          e.target.onerror = null
-          e.target.src = FALLBACK
-        }}
+        loading="lazy"
+        onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK }}
       />
-
       <span className="sidebar__item-title">{anime.title}</span>
-
       <button
         className="sidebar__item-remove"
         onClick={() => onToggle(anime, field)}
         title="Remover"
+        aria-label={`Remover ${anime.title}`}
       >
         ✕
       </button>

@@ -1,30 +1,32 @@
 .day-column {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(19, 19, 31, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
 }
 
 .day-column--today {
-  border-color: rgba(99, 179, 237, 0.8);
-  box-shadow: 0 0 30px rgba(49, 140, 213, 0.3), 0 24px 60px rgba(0, 0, 0, 0.25);
-  background: rgba(49, 140, 213, 0.08);
+  border-color: rgba(192, 57, 43, 0.55);
+  box-shadow: 0 0 30px rgba(192, 57, 43, 0.18), 0 24px 60px rgba(0, 0, 0, 0.3);
+  background: rgba(192, 57, 43, 0.06);
 }
 
 /* Em modo celular, melhorar contraste */
 @media (max-width: 480px) {
   .day-column {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(19, 19, 31, 0.75);
     border: 1.5px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
   }
 
   .day-column--today {
-    background: rgba(49, 140, 213, 0.12);
-    border: 2px solid rgba(99, 179, 237, 1);
-    box-shadow: 0 0 40px rgba(49, 140, 213, 0.4), 0 20px 60px rgba(0, 0, 0, 0.35);
+    background: rgba(192, 57, 43, 0.1);
+    border: 2px solid rgba(192, 57, 43, 0.7);
+    box-shadow: 0 0 40px rgba(192, 57, 43, 0.25), 0 20px 60px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -33,22 +35,22 @@
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent);
 }
 
 .day-column--today .day-column__header {
-  background: linear-gradient(180deg, rgba(49, 140, 213, 0.18), rgba(49, 140, 213, 0.03));
+  background: linear-gradient(180deg, rgba(192, 57, 43, 0.15), rgba(192, 57, 43, 0.02));
 }
 
 /* Em modo celular, melhorar header */
 @media (max-width: 480px) {
   .day-column__header {
     padding: 1.25rem 1.25rem 1rem;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01));
   }
 
   .day-column--today .day-column__header {
-    background: linear-gradient(180deg, rgba(49, 140, 213, 0.25), rgba(49, 140, 213, 0.05));
+    background: linear-gradient(180deg, rgba(192, 57, 43, 0.22), rgba(192, 57, 43, 0.04));
   }
 }
 
@@ -89,8 +91,8 @@
 
   .day-column--today .day-column__name {
     font-size: 2rem;
-    color: rgba(99, 179, 237, 1);
-    text-shadow: 0 0 20px rgba(99, 179, 237, 0.3);
+    color: var(--accent-sakura);
+    text-shadow: 0 0 20px rgba(232, 145, 159, 0.35);
   }
 }
 

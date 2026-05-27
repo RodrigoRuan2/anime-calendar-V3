@@ -18,20 +18,18 @@ function groupByDay(animeArray, weekOffset = 0) {
     if (!anime.episodeDate) return
 
     const date = new Date(anime.episodeDate)
-    
-    // 🔥 Se for próxima semana, ajusta a data
+
     if (weekOffset > 0) {
-      date.setDate(date.getDate() + (weekOffset * 7))
+      date.setDate(date.getDate() + weekOffset * 7)
     }
-    
-    const day = DAYS[date.getDay()] // getDay() retorna 0=domingo, 1=segunda...
-    
+
+    const day = DAYS[date.getDay()]
+
     if (grouped[day] !== undefined) {
       grouped[day].push(anime)
     }
   })
 
-  // Ordena cada dia por horário
   Object.keys(grouped).forEach((day) => {
     grouped[day].sort((a, b) => new Date(a.episodeDate) - new Date(b.episodeDate))
   })
@@ -61,7 +59,7 @@ export function useAnimeSchedule(weekOffset = 0) {
     }
 
     fetchSchedule()
-  }, [])
+  }, [weekOffset])
 
   return { schedule, loading, error }
 }

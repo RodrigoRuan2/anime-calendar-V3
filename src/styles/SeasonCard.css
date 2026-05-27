@@ -18,12 +18,12 @@
 }
 
 .season-card--favorite {
-  border-color: #f4a261;
+  border-color: var(--accent-gold);
 }
 
 .season-card--watching.season-card--favorite {
-  border-color: #f4a261;
-  box-shadow: 0 0 12px rgba(244, 162, 97, 0.3);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 12px var(--accent-gold-glow);
 }
 
 /* Poster */
@@ -90,9 +90,9 @@
 }
 
 .season-card__btn.active-favorite {
-  background: rgba(244, 162, 97, 0.3);
-  border-color: #f4a261;
-  color: #f4a261;
+  background: rgba(212, 160, 23, 0.15);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
 }
 
 /* Badges */
@@ -117,7 +117,7 @@
 }
 
 .badge--favorite {
-  background: #f4a261;
+  background: var(--accent-gold);
   color: #000;
 }
 

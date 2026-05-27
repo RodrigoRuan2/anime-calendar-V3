@@ -1,29 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;600&display=swap');
-
-/* ── Variáveis ─────────────────────────────────────────────── */
 :root {
-  --bg-primary:    #0a0a0f;
-  --bg-secondary:  #111118;
-  --bg-card:       #16161f;
-  --bg-card-hover: #1e1e2a;
-  --accent:        #e63946;
-  --accent-glow:   rgba(230, 57, 70, 0.3);
-  --accent-2:      #f4a261;
-  --text-primary:  #f0f0f5;
-  --text-muted:    #6b6b80;
-  --border:        rgba(255, 255, 255, 0.07);
-  --today-border:  var(--accent);
-  --today-glow:    rgba(230, 57, 70, 0.12);
-  --radius:        12px;
+  /* ── Fundos ───────────────────────────────────────────── */
+  --bg-primary:    #080810;
+  --bg-secondary:  #0e0e1a;
+  --bg-card:       #13131f;
+  --bg-card-hover: #1a1a28;
+
+  /* ── Vermelho torii ───────────────────────────────────── */
+  --accent:        #c0392b;
+  --accent-glow:   rgba(192, 57, 43, 0.28);
+
+  /* ── Dourado âmbar (pôr do sol no lago) ──────────────── */
+  --accent-gold:      #c8901a;
+  --accent-gold-glow: rgba(200, 144, 26, 0.22);
+
+  /* ── Rosa sakura ──────────────────────────────────────── */
+  --accent-sakura:      #e8919f;
+  --accent-sakura-glow: rgba(232, 145, 159, 0.18);
+
+  /* ── Azul Fuji (céu + reflexo no lago) ───────────────── */
+  --accent-fuji:      #4a6fa5;
+  --accent-fuji-glow: rgba(74, 111, 165, 0.20);
+
+  /* ── Texto ────────────────────────────────────────────── */
+  --text-primary:  #f0ede8;
+  --text-muted:    #6b6878;
+
+  /* ── Bordas / layout ─────────────────────────────────── */
+  --border:        rgba(255, 255, 255, 0.06);
+  --border-hover:  rgba(255, 255, 255, 0.12);
+  --today-glow:    rgba(192, 57, 43, 0.1);
+  --radius:        14px;
   --radius-sm:     8px;
 }
 
-/* ── Reset ─────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a3a transparent;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 4px; }
 
 body {
   font-family: 'Noto Sans JP', sans-serif;
   background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(ellipse at 50% 0%,   rgba(192, 57, 43, 0.06)  0%, transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(212, 160, 23, 0.04) 0%, transparent 50%),
+    linear-gradient(rgba(8, 8, 16, 0.78), rgba(8, 8, 16, 0.88)),
+    url('/bg.jpg');
+  background-size:     auto, auto, auto, cover;
+  background-position: center, center, center, center top;
+  background-repeat:   no-repeat, no-repeat, no-repeat, no-repeat;
+  background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
 }
@@ -32,43 +64,196 @@ body {
 .app {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 1rem 1rem;
+  padding: 1rem;
 }
 
 /* ── Header ────────────────────────────────────────────────── */
 .app-header {
   text-align: center;
-  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  margin-bottom: 1rem;
+  position: relative;
 }
 
 .app-header::after {
   content: '';
   display: block;
-  width: 80px;
-  height: 3px;
-  background: var(--accent);
-  margin: 1rem auto 0;
-  box-shadow: 0 0 12px var(--accent-glow);
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-sakura), var(--accent-gold), transparent);
+  margin: 1.25rem auto 0;
 }
 
 .app-header__title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  letter-spacing: 0.08em;
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  line-height: 1;
+  letter-spacing: 0.1em;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  color: var(--text-primary);
 }
 
-.app-header__icon { font-size: 0.75em; }
+.app-header__icon {
+  font-size: 0.75em;
+}
+
+.app-header__title-text {
+  background: linear-gradient(135deg, #f0ede8 30%, var(--accent-gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 .app-header__subtitle {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 300;
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
+  letter-spacing: 0.06em;
+}
+
+/* ── Banner hoje ────────────────────────────────────────────── */
+.today-banner {
+  display: inline-block;
+  margin-top: 0.9rem;
+  padding: 0.45rem 1.2rem;
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e8cfc9;
   letter-spacing: 0.04em;
+}
+
+/* ── Abas ──────────────────────────────────────────────────── */
+.app-tabs-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.app-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 0.25rem;
+}
+
+.app-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.5rem 1.3rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.app-tab:hover { color: var(--text-primary); }
+
+.app-tab--active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 18px var(--accent-glow);
+}
+
+/* ── Header action buttons ──────────────────────────────────── */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-toggle-btn {
+  border: 1px solid var(--border);
+  background: rgba(19, 19, 31, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.55rem 1rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sidebar-toggle-btn:hover {
+  border-color: var(--border-hover);
+  background: rgba(26, 26, 40, 0.85);
+}
+
+.sidebar-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notif-btn {
+  border: 1px solid var(--border);
+  background: rgba(19, 19, 31, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notif-btn:hover {
+  border-color: var(--accent-fuji);
+  color: var(--accent-fuji);
+}
+
+.notif-btn--active {
+  border-color: var(--accent-fuji);
+  color: var(--accent-fuji);
+  background: rgba(74, 111, 165, 0.10);
+}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+.app-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-top: 1.5rem;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
 }
 
 /* ── Loading / Erro ────────────────────────────────────────── */
@@ -84,117 +269,40 @@ body {
 }
 
 .calendar-status--error { color: var(--accent); }
-.calendar-status--error small {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-}
+.calendar-status--error small { color: var(--text-muted); font-size: 0.75rem; }
 
 .loader {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border);
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--border);
   border-top-color: var(--accent);
+  border-right-color: var(--accent-gold);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Abas ──────────────────────────────────────────────────── */
-.app-tabs-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1.5rem;
+/* ── Sidebar overlay ────────────────────────────────────────── */
+.sidebar-overlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 8, 16, 0.8);
+  backdrop-filter: blur(2px);
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
 }
 
-.app-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
+.sidebar-overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.app-tab {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-family: 'Noto Sans JP', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.55rem 1.4rem;
-  border-radius: 99px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.app-tab:hover {
-  color: var(--text-primary);
-  border-color: rgba(255,255,255,0.15);
-}
-
-.app-tab--active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 16px var(--accent-glow);
-}
-
-.sidebar-toggle-btn {
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  font-weight: 700;
-  padding: 0.65rem 1rem;
-  border-radius: 99px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.sidebar-toggle-btn:hover {
-  color: var(--accent);
-  border-color: rgba(255,255,255,0.18);
-}
-
-.app-main {
-  margin-top: 2rem;
-}
-
-/* ── Layout com sidebar ────────────────────────────────────── */
-.app-layout {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
-  margin-top: 2rem;
-}
-
-.app-main {
-  flex: 1;
-  min-width: 0;
-}
-
+/* ── Responsivo ─────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .sidebar-toggle-btn {
-    display: inline-flex;
-  }
-
-  .app-layout {
-    flex-direction: column;
-  }
-
-  .app-main {
-    width: 100%;
-  }
-}
-
-.today-banner {
-  margin-top: 10px;
-  padding: 10px 16px;
-  background: linear-gradient(90deg, #ff4d4d, #ff7a7a);
-  border-radius: 12px;
-  font-weight: 600;
-  color: white;
-  box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
+  .app-layout { flex-direction: column; }
+  .app-main { width: 100%; }
 }

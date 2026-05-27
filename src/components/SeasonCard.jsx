@@ -3,19 +3,24 @@ import '../styles/SeasonCard.css'
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
 const FALLBACK   = 'https://placehold.co/200x280?text=?'
 
-export default function SeasonCard({ anime, status, onToggle }) {
+export default function SeasonCard({ anime, status, onToggle, onClick }) {
   const imageUrl = anime.imageVersionRoute
     ? `${IMAGE_BASE}${anime.imageVersionRoute}`
     : null
 
   return (
-    <div className={`season-card ${status.watching ? 'season-card--watching' : ''} ${status.favorite ? 'season-card--favorite' : ''}`}>
+    <div
+      className={`season-card ${status.watching ? 'season-card--watching' : ''} ${status.favorite ? 'season-card--favorite' : ''}`}
+      onClick={onClick ? () => onClick(anime) : undefined}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+    >
 
       {/* Poster */}
       <div className="season-card__poster">
         <img
           src={anime.images?.jpg?.image_url}
           alt={anime.title}
+          loading="lazy"
           onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK }}
         />
 
@@ -23,14 +28,14 @@ export default function SeasonCard({ anime, status, onToggle }) {
         <div className="season-card__overlay">
           <button
             className={`season-card__btn ${status.watching ? 'active-watching' : ''}`}
-            onClick={() => onToggle(anime, 'watching')}
+            onClick={(e) => { e.stopPropagation(); onToggle(anime, 'watching') }}
             title={status.watching ? 'Parar de assistir' : 'Marcar como assistindo'}
           >
             {status.watching ? '▶ Assistindo' : '▶ Assistir'}
           </button>
           <button
             className={`season-card__btn ${status.favorite ? 'active-favorite' : ''}`}
-            onClick={() => onToggle(anime, 'favorite')}
+            onClick={(e) => { e.stopPropagation(); onToggle(anime, 'favorite') }}
             title={status.favorite ? 'Remover favorito' : 'Adicionar favorito'}
           >
             {status.favorite ? '★ Favorito' : '☆ Favoritar'}

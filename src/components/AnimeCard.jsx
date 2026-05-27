@@ -15,7 +15,7 @@ const PLATFORM_COLORS = {
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
 const FALLBACK   = 'https://placehold.co/100x140?text=?'
 
-export default function AnimeCard({ anime, status, onToggle }) {
+export default function AnimeCard({ anime, status, onToggle, onClick }) {
   const airTime = anime.episodeDate
     ? new Date(anime.episodeDate).toLocaleTimeString('pt-BR', {
         hour: '2-digit',
@@ -32,13 +32,17 @@ export default function AnimeCard({ anime, status, onToggle }) {
   const isFavorite = status?.favorite
 
   return (
-    <div className={`anime-card ${isWatching ? 'anime-card--watching' : ''} ${isFavorite ? 'anime-card--favorite' : ''}`}>
+    <div
+      className={`anime-card ${isWatching ? 'anime-card--watching' : ''} ${isFavorite ? 'anime-card--favorite' : ''}`}
+      onClick={onClick ? () => onClick(anime) : undefined}
+    >
 
       {/* Poster */}
       <div className="anime-card__poster">
         <img
           src={imageUrl || FALLBACK}
           alt={anime.title}
+          loading="lazy"
           onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK }}
         />
       </div>
@@ -56,11 +60,11 @@ export default function AnimeCard({ anime, status, onToggle }) {
 
         {platforms.length > 0 && (
           <div className="anime-card__platforms">
-            {platforms.map((stream, index) => {
+            {platforms.map((stream) => {
               const color = PLATFORM_COLORS[stream.platform] || '#888'
               return (
                 <a
-                  key={index}
+                  key={`${stream.platform ?? stream.name}_${stream.url}`}
                   href={`https://${stream.url}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -80,14 +84,14 @@ export default function AnimeCard({ anime, status, onToggle }) {
           <div className="anime-card__actions">
             <button
               className={`anime-card__action-btn ${isWatching ? 'active-watching' : ''}`}
-              onClick={() => onToggle(anime, 'watching')}
+              onClick={(e) => { e.stopPropagation(); onToggle(anime, 'watching') }}
               title={isWatching ? 'Parar de assistir' : 'Marcar como assistindo'}
             >
               {isWatching ? '▶ Assistindo' : '▶ Assistir'}
             </button>
             <button
               className={`anime-card__action-btn ${isFavorite ? 'active-favorite' : ''}`}
-              onClick={() => onToggle(anime, 'favorite')}
+              onClick={(e) => { e.stopPropagation(); onToggle(anime, 'favorite') }}
               title={isFavorite ? 'Remover favorito' : 'Favoritar'}
             >
               {isFavorite ? '★' : '☆'}

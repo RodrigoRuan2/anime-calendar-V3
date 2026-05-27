@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import Calendar from './components/Calendar'
 import SeasonGrid from './components/SeasonGrid'
 import Sidebar from './components/Sidebar'
+import AnimeModal from './components/AnimeModal'
 import { useAnimeStatus } from './hooks/useAnimeStatus'
 import { useAnimeSchedule } from './hooks/useAnimeSchedule'
-import { useSeasonAnime } from './hooks/useSeasonAnime'
+import { useNotifications } from './hooks/useNotifications'
 import { getAnimeKey } from './utils/animeKey'
 import './styles/App.css'
 
@@ -18,50 +19,52 @@ export default function App() {
   const [seasonFilter, setSeasonFilter] = useState('all')
   const [sidebarOpen, setSidebarOpen]   = useState(false)
   const [isNextWeek, setIsNextWeek]     = useState(false)
+  const [selectedAnime, setSelectedAnime] = useState(null)
+  const closeModal = useCallback(() => setSelectedAnime(null), [])
 
   const { toggleStatus, getStatus, statusMap } = useAnimeStatus()
   const { schedule, loading: scheduleLoading, error: scheduleError } = useAnimeSchedule(isNextWeek ? 1 : 0)
-  const { animes: seasonAnimes } = useSeasonAnime()
 
-  // 📅 DATA ATUAL FORMATADA
   const today = new Date()
-
   const formattedDate = today.toLocaleDateString('pt-BR', {
     weekday: 'long',
     day: '2-digit',
-    month: 'long'
+    month: 'long',
   })
 
-  // 📦 JUNTA TODOS OS ANIMES
+  // Sidebar e notificações usam apenas os dados do calendário
   const calendarAnimes = useMemo(
     () => Object.values(schedule).flat(),
     [schedule],
   )
 
-  const allAnimes = useMemo(() => {
-    const map = new Map()
+  const watchingAnimes = useMemo(
+    () => calendarAnimes.filter((a) => statusMap[getAnimeKey(a)]?.watching),
+    [calendarAnimes, statusMap],
+  )
 
-    for (const anime of [...seasonAnimes, ...calendarAnimes]) {
-      const key = getAnimeKey(anime)
-      if (key) map.set(key, anime)
-    }
+  const { permission, enabled, requestPermission, toggleEnabled } = useNotifications(watchingAnimes)
 
-    return Array.from(map.values())
-  }, [seasonAnimes, calendarAnimes])
+  const totalMarked = useMemo(
+    () => calendarAnimes.filter((a) => {
+      const s = statusMap[getAnimeKey(a)]
+      return s?.watching || s?.favorite
+    }).length,
+    [calendarAnimes, statusMap],
+  )
 
   return (
     <div className="app">
       <header className="app-header">
         <h1 className="app-header__title">
           <span className="app-header__icon">⛩</span>
-          Anime Calendar
+          <span className="app-header__title-text">AniCal</span>
         </h1>
 
         <p className="app-header__subtitle">
           Acompanhe os lançamentos semanais de animes e onde assistir
         </p>
 
-        {/* 🔥 NOVO: BANNER DO DIA */}
         <div className="today-banner">
           📅 Hoje é {formattedDate}
         </div>
@@ -79,14 +82,40 @@ export default function App() {
             ))}
           </nav>
 
-          <button
-            className="sidebar-toggle-btn"
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Abrir sidebar"
-          >
-            ☰ Favoritos
-          </button>
+          <div className="header-actions">
+            {permission !== 'granted' && (
+              <button
+                className="notif-btn"
+                onClick={requestPermission}
+                title="Ativar notificações de animes"
+                aria-label="Ativar notificações"
+              >
+                🔔
+              </button>
+            )}
+            {permission === 'granted' && (
+              <button
+                className={`notif-btn ${enabled ? 'notif-btn--active' : ''}`}
+                onClick={toggleEnabled}
+                title={enabled ? 'Desativar notificações' : 'Ativar notificações'}
+                aria-label={enabled ? 'Desativar notificações' : 'Ativar notificações'}
+              >
+                {enabled ? '🔔' : '🔕'}
+              </button>
+            )}
+
+            <button
+              className="sidebar-toggle-btn"
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Abrir lista"
+            >
+              ☰ Minha Lista
+              {totalMarked > 0 && (
+                <span className="sidebar-badge">{totalMarked}</span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -97,7 +126,7 @@ export default function App() {
         />
 
         <Sidebar
-          allAnimes={allAnimes}
+          allAnimes={calendarAnimes}
           statusMap={statusMap}
           onToggle={toggleStatus}
           isOpen={sidebarOpen}
@@ -112,23 +141,33 @@ export default function App() {
               error={scheduleError}
               onToggle={toggleStatus}
               getStatus={getStatus}
-              today={today.getDay()} // 🔥 ESSENCIAL
+              today={today.getDay()}
               isNextWeek={isNextWeek}
               setIsNextWeek={setIsNextWeek}
+              onAnimeClick={setSelectedAnime}
             />
           )}
 
           {activeTab === 'season' && (
             <SeasonGrid
-              animes={seasonAnimes}
               activeFilter={seasonFilter}
               onFilterChange={setSeasonFilter}
               onToggle={toggleStatus}
               getStatus={getStatus}
+              onAnimeClick={setSelectedAnime}
             />
           )}
         </main>
       </div>
+
+      {selectedAnime && (
+        <AnimeModal
+          anime={selectedAnime}
+          status={getStatus(selectedAnime)}
+          onToggle={toggleStatus}
+          onClose={closeModal}
+        />
+      )}
     </div>
   )
 }

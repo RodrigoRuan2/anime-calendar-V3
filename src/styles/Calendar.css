@@ -36,33 +36,34 @@
 .week-toggle-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: var(--text-primary, rgba(255, 255, 255, 0.9));
-  font-size: 0.9rem;
-  font-weight: 500;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  background: rgba(19, 19, 31, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--text-primary);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   outline: none;
   user-select: none;
 }
 
 .week-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: rgba(26, 26, 40, 0.85);
+  border-color: var(--border-hover);
 }
 
 .week-toggle-btn:active {
-  transform: translateY(0);
+  transform: scale(0.97);
 }
 
 .week-toggle-btn svg {
-  transition: transform 0.3s ease;
+  opacity: 0.6;
 }
 
 /* Em modo celular, ajustar header */
@@ -175,9 +176,9 @@
 .pagination-dot--active {
   width: 10px;
   height: 10px;
-  background: rgba(99, 179, 237, 0.8);
-  border-color: rgba(99, 179, 237, 1);
-  box-shadow: 0 0 12px rgba(99, 179, 237, 0.5);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .calendar-status {

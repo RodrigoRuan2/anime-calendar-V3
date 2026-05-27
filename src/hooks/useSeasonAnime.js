@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getSeasonAnime } from '../services/animeScheduleApi'
 
 export function useSeasonAnime(seasonOffset = 0) {
@@ -8,31 +8,18 @@ export function useSeasonAnime(seasonOffset = 0) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    // 🔥 RESETA O ESTADO QUANDO MUDA A TEMPORADA
-    setAnimes([])
-    setPage(1)
-    setHasMore(true)
-    setLoading(true)
-    setError(null)
-    fetchPage(1, seasonOffset)
-  }, [seasonOffset])
-
-  async function fetchPage(pageNumber, offset = seasonOffset) {
+  const fetchPage = useCallback(async (pageNumber) => {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await getSeasonAnime(pageNumber, offset)
+      const res = await getSeasonAnime(pageNumber, seasonOffset)
 
       setAnimes((prev) => {
         const map = new Map()
-        const combined = [...prev, ...res.data]
-
-        for (const anime of combined) {
+        for (const anime of [...prev, ...res.data]) {
           map.set(anime.mal_id, anime)
         }
-
         return Array.from(map.values())
       })
 
@@ -48,11 +35,19 @@ export function useSeasonAnime(seasonOffset = 0) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [seasonOffset])
+
+  useEffect(() => {
+    setAnimes([])
+    setPage(1)
+    setHasMore(true)
+    setError(null)
+    fetchPage(1)
+  }, [fetchPage])
 
   function loadMore() {
     if (hasMore && !loading) {
-      fetchPage(page + 1, seasonOffset)
+      fetchPage(page + 1)
     }
   }
 
