@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#080810"/>
+  <!-- kasagi (top beam) -->
+  <rect x="7" y="13" width="50" height="6" rx="3" fill="#c0392b"/>
+  <!-- curved tips -->
+  <ellipse cx="10" cy="13" rx="4" ry="2.5" fill="#c0392b" transform="rotate(-12 10 13)"/>
+  <ellipse cx="54" cy="13" rx="4" ry="2.5" fill="#c0392b" transform="rotate(12 54 13)"/>
+  <!-- nuki (middle beam) -->
+  <rect x="13" y="22" width="38" height="4" rx="2" fill="#c0392b"/>
+  <!-- left pillar -->
+  <rect x="17" y="22" width="5" height="28" rx="2.5" fill="#d4a017"/>
+  <!-- right pillar -->
+  <rect x="42" y="22" width="5" height="28" rx="2.5" fill="#d4a017"/>
+</svg>
