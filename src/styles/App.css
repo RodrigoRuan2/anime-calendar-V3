@@ -46,16 +46,14 @@ html {
 
 body {
   font-family: 'Noto Sans JP', sans-serif;
+  /* Fundo escuro simples, sem imagem: acaba com o lag e fica limpo.
+     Os dois brilhos radiais são só gradientes (baratos) para dar um leve
+     toque de cor nos cantos, sem peso de renderização. */
   background-color: var(--bg-primary);
   background-image:
-    radial-gradient(ellipse at 50% 0%,   rgba(192, 57, 43, 0.06)  0%, transparent 55%),
-    radial-gradient(ellipse at 100% 100%, rgba(212, 160, 23, 0.04) 0%, transparent 50%),
-    linear-gradient(rgba(8, 8, 16, 0.78), rgba(8, 8, 16, 0.88)),
-    url('/bg.jpg');
-  background-size:     auto, auto, auto, cover;
-  background-position: center, center, center, center top;
-  background-repeat:   no-repeat, no-repeat, no-repeat, no-repeat;
-  background-attachment: fixed;
+    radial-gradient(ellipse at 50% 0%,    rgba(192, 57, 43, 0.10)  0%, transparent 45%),
+    radial-gradient(ellipse at 100% 100%, rgba(212, 160, 23, 0.06) 0%, transparent 45%);
+  background-repeat: no-repeat;
   color: var(--text-primary);
   min-height: 100vh;
 }

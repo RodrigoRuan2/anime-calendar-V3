@@ -10,7 +10,7 @@ export default function SeasonCard({ anime, status, onToggle, onClick }) {
 
   return (
     <div
-      className={`season-card ${status.watching ? 'season-card--watching' : ''} ${status.favorite ? 'season-card--favorite' : ''}`}
+      className={`season-card ${status.watching ? 'season-card--watching' : ''}`}
       onClick={onClick ? () => onClick(anime) : undefined}
       style={{ cursor: onClick ? 'pointer' : 'default' }}
     >
@@ -24,7 +24,7 @@ export default function SeasonCard({ anime, status, onToggle, onClick }) {
           onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK }}
         />
 
-        {/* Overlay com botões ao passar o mouse */}
+        {/* Overlay com botão ao passar o mouse */}
         <div className="season-card__overlay">
           <button
             className={`season-card__btn ${status.watching ? 'active-watching' : ''}`}
@@ -33,19 +33,11 @@ export default function SeasonCard({ anime, status, onToggle, onClick }) {
           >
             {status.watching ? '▶ Assistindo' : '▶ Assistir'}
           </button>
-          <button
-            className={`season-card__btn ${status.favorite ? 'active-favorite' : ''}`}
-            onClick={(e) => { e.stopPropagation(); onToggle(anime, 'favorite') }}
-            title={status.favorite ? 'Remover favorito' : 'Adicionar favorito'}
-          >
-            {status.favorite ? '★ Favorito' : '☆ Favoritar'}
-          </button>
         </div>
 
-        {/* Badges de status visíveis no card */}
+        {/* Badge de status visível no card */}
         <div className="season-card__badges">
           {status.watching && <span className="badge badge--watching">▶</span>}
-          {status.favorite && <span className="badge badge--favorite">★</span>}
         </div>
       </div>
 

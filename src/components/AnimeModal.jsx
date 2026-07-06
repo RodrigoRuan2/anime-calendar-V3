@@ -62,7 +62,6 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
   const genres     = details?.genres || []
   const streams    = anime.streams || []
   const isWatching = status?.watching
-  const isFavorite = status?.favorite
   const isAiring   = status_str === 'Currently Airing'
 
   return (
@@ -147,12 +146,6 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
                   onClick={() => onToggle(anime, 'watching')}
                 >
                   {isWatching ? '▶ Assistindo' : '▶ Assistir'}
-                </button>
-                <button
-                  className={`modal__action-btn ${isFavorite ? 'active-favorite' : ''}`}
-                  onClick={() => onToggle(anime, 'favorite')}
-                >
-                  {isFavorite ? '★ Favorito' : '☆ Favoritar'}
                 </button>
               </div>
             </>

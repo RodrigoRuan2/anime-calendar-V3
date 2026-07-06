@@ -29,11 +29,10 @@ export default function AnimeCard({ anime, status, onToggle, onClick }) {
     : null
 
   const isWatching = status?.watching
-  const isFavorite = status?.favorite
 
   return (
     <div
-      className={`anime-card ${isWatching ? 'anime-card--watching' : ''} ${isFavorite ? 'anime-card--favorite' : ''}`}
+      className={`anime-card ${isWatching ? 'anime-card--watching' : ''}`}
       onClick={onClick ? () => onClick(anime) : undefined}
     >
 
@@ -79,7 +78,7 @@ export default function AnimeCard({ anime, status, onToggle, onClick }) {
           </div>
         )}
 
-        {/* Botões de status */}
+        {/* Botão de status */}
         {onToggle && (
           <div className="anime-card__actions">
             <button
@@ -88,13 +87,6 @@ export default function AnimeCard({ anime, status, onToggle, onClick }) {
               title={isWatching ? 'Parar de assistir' : 'Marcar como assistindo'}
             >
               {isWatching ? '▶ Assistindo' : '▶ Assistir'}
-            </button>
-            <button
-              className={`anime-card__action-btn ${isFavorite ? 'active-favorite' : ''}`}
-              onClick={(e) => { e.stopPropagation(); onToggle(anime, 'favorite') }}
-              title={isFavorite ? 'Remover favorito' : 'Favoritar'}
-            >
-              {isFavorite ? '★' : '☆'}
             </button>
           </div>
         )}

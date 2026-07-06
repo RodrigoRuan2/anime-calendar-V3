@@ -82,103 +82,142 @@
   }
 }
 
-.calendar {
+/* ── Seletor de dias (SEG TER QUA ...) ─────────────────────── */
+.day-selector {
   display: grid;
-  grid-template-columns: repeat(7, minmax(160px, 1fr));
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+}
+
+.day-selector__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.6rem 0.3rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+
+.day-selector__btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.day-selector__short {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.day-selector__date {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.day-selector__count {
+  font-size: 0.62rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+/* Dia de hoje: um pontinho/borda sutil mesmo quando não está selecionado */
+.day-selector__btn--today {
+  border-color: rgba(192, 57, 43, 0.4);
+}
+
+/* Dia selecionado: destaque forte */
+.day-selector__btn--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.day-selector__btn--active .day-selector__date {
+  color: #fff;
+}
+
+.day-selector__btn--active .day-selector__count {
+  opacity: 0.9;
+}
+
+/* ── Cabeçalho do dia aberto ────────────────────────────────── */
+.day-view__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.25rem 0 0.25rem;
+  padding: 0 0.25rem;
+}
+
+.day-view__name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.day-view__today-tag {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--accent);
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+}
+
+.day-view__date {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.day-view__empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 3rem 1rem;
+}
+
+/* ── Grade de animes do dia ─────────────────────────────────── */
+.day-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0.85rem;
-  align-items: start;
-}
-
-@media (max-width: 1400px) {
-  .calendar {
-    grid-template-columns: repeat(6, minmax(140px, 1fr));
-  }
-}
-
-@media (max-width: 1100px) {
-  .calendar {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 760px) {
-  .calendar {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  /* align-items: stretch (padrão) → todos os cards da fileira ficam com a
+     altura do mais alto, e o botão "Assistir" alinha no rodapé. */
+  align-items: stretch;
 }
 
 @media (max-width: 520px) {
-  .calendar {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Em telas muito pequenas, scroll horizontal */
-@media (max-width: 480px) {
-  .calendar {
-    display: flex;
-    gap: 0.85rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-behavior: smooth;
-    scroll-snap-type: x mandatory;
-    padding-bottom: 0.5rem;
-    -webkit-overflow-scrolling: touch;
-    
-    /* Remove scroll bar visual */
-    scrollbar-width: none;
+  .day-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .calendar::-webkit-scrollbar {
-    display: none;
+  .day-selector__btn {
+    padding: 0.5rem 0.15rem;
   }
 
-  .day-column {
-    flex: 0 0 calc(100vw - 2rem);
-    max-width: calc(100vw - 2rem);
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
+  .day-selector__short {
+    font-size: 0.62rem;
   }
-}
-
-/* 📍 PAGINAÇÃO - DOTS */
-.calendar-pagination {
-  display: none;
-  gap: 0.5rem;
-  justify-content: center;
-  align-items: center;
-  padding: 0.5rem 0;
-}
-
-@media (max-width: 480px) {
-  .calendar-pagination {
-    display: flex;
-  }
-}
-
-.pagination-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.15);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 0;
-  outline: none;
-}
-
-.pagination-dot:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.2);
-}
-
-.pagination-dot--active {
-  width: 10px;
-  height: 10px;
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .calendar-status {

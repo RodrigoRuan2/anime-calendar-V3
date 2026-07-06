@@ -5,7 +5,6 @@ import Sidebar from './components/Sidebar'
 import AnimeModal from './components/AnimeModal'
 import { useAnimeStatus } from './hooks/useAnimeStatus'
 import { useAnimeSchedule } from './hooks/useAnimeSchedule'
-import { useNotifications } from './hooks/useNotifications'
 import { getAnimeKey } from './utils/animeKey'
 import './styles/App.css'
 
@@ -32,24 +31,15 @@ export default function App() {
     month: 'long',
   })
 
-  // Sidebar e notificações usam apenas os dados do calendário
+  // A sidebar "Minha Lista" usa apenas os dados do calendário
   const calendarAnimes = useMemo(
     () => Object.values(schedule).flat(),
     [schedule],
   )
 
-  const watchingAnimes = useMemo(
-    () => calendarAnimes.filter((a) => statusMap[getAnimeKey(a)]?.watching),
-    [calendarAnimes, statusMap],
-  )
-
-  const { permission, enabled, requestPermission, toggleEnabled } = useNotifications(watchingAnimes)
-
+  // Quantos animes estão marcados como "Assistindo" (badge da Minha Lista)
   const totalMarked = useMemo(
-    () => calendarAnimes.filter((a) => {
-      const s = statusMap[getAnimeKey(a)]
-      return s?.watching || s?.favorite
-    }).length,
+    () => calendarAnimes.filter((a) => statusMap[getAnimeKey(a)]?.watching).length,
     [calendarAnimes, statusMap],
   )
 
@@ -83,27 +73,6 @@ export default function App() {
           </nav>
 
           <div className="header-actions">
-            {permission !== 'granted' && (
-              <button
-                className="notif-btn"
-                onClick={requestPermission}
-                title="Ativar notificações de animes"
-                aria-label="Ativar notificações"
-              >
-                🔔
-              </button>
-            )}
-            {permission === 'granted' && (
-              <button
-                className={`notif-btn ${enabled ? 'notif-btn--active' : ''}`}
-                onClick={toggleEnabled}
-                title={enabled ? 'Desativar notificações' : 'Ativar notificações'}
-                aria-label={enabled ? 'Desativar notificações' : 'Ativar notificações'}
-              >
-                {enabled ? '🔔' : '🔕'}
-              </button>
-            )}
-
             <button
               className="sidebar-toggle-btn"
               type="button"

@@ -6,7 +6,6 @@ import '../styles/SeasonGrid.css'
 const FILTERS = [
   { key: 'all',      label: 'Todos'        },
   { key: 'watching', label: '▶ Assistindo' },
-  { key: 'favorite', label: '★ Favoritos'  },
 ]
 
 export default function SeasonGrid({
@@ -56,7 +55,6 @@ export default function SeasonGrid({
   const filtered = animes.filter((anime) => {
     const status = getStatus(anime)
     if (activeFilter === 'watching') return status.watching
-    if (activeFilter === 'favorite') return status.favorite
     return true
   })
 

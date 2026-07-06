@@ -6,7 +6,6 @@ const FALLBACK = 'https://placehold.co/36x50?text=?'
 
 export default function Sidebar({ allAnimes, statusMap, onToggle, isOpen, onClose }) {
   const watching = allAnimes.filter((anime) => statusMap[getAnimeKey(anime)]?.watching)
-  const favorites = allAnimes.filter((anime) => statusMap[getAnimeKey(anime)]?.favorite)
 
   return (
     <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
@@ -41,31 +40,6 @@ export default function Sidebar({ allAnimes, statusMap, onToggle, isOpen, onClos
                   key={getAnimeKey(anime)}
                   anime={anime}
                   field="watching"
-                  onToggle={onToggle}
-                />
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="sidebar__divider" />
-
-        <div className="sidebar__section">
-          <h2 className="sidebar__title">
-            <span className="sidebar__icon sidebar__icon--favorite">★</span>
-            Favoritos
-            <span className="sidebar__count">{favorites.length}</span>
-          </h2>
-
-          {favorites.length === 0 ? (
-            <p className="sidebar__empty">Nenhum favorito ainda</p>
-          ) : (
-            <ul className="sidebar__list">
-              {favorites.map((anime) => (
-                <SidebarItem
-                  key={getAnimeKey(anime)}
-                  anime={anime}
-                  field="favorite"
                   onToggle={onToggle}
                 />
               ))}
