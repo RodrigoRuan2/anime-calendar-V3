@@ -12,25 +12,13 @@
   padding: 0 0.5rem;
 }
 
-.calendar-title {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.calendar-title h2 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.8rem;
-  letter-spacing: 0.1em;
+/* Legenda discreta da semana (antes era um título grande "ESTA SEMANA") */
+.calendar-week-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  margin: 0;
-  color: var(--text-primary, rgba(255, 255, 255, 0.95));
-}
-
-.calendar-date-range {
-  font-size: 0.85rem;
   color: var(--text-muted);
-  font-weight: 500;
 }
 
 .week-toggle-btn {
@@ -42,7 +30,7 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: 99px;
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-family: 'Noto Sans JP', sans-serif;
   font-size: 0.82rem;
@@ -60,10 +48,6 @@
 
 .week-toggle-btn:active {
   transform: scale(0.97);
-}
-
-.week-toggle-btn svg {
-  opacity: 0.6;
 }
 
 /* Em modo celular, ajustar header */
@@ -206,17 +190,79 @@
   align-items: stretch;
 }
 
+/* ── Esqueletos de carregamento ─────────────────────────────── */
+.card-skeleton {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.card-skeleton__poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 10px;
+}
+
+.card-skeleton__line {
+  height: 0.7rem;
+  border-radius: 4px;
+}
+
+.card-skeleton__line--short {
+  width: 55%;
+}
+
+/* Brilho que corre da direita p/ esquerda, dando a sensação de carregando */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.10) 37%,
+    rgba(255, 255, 255, 0.04) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+}
+
+@keyframes skeleton-loading {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* Acessibilidade: desliga o brilho para quem prefere menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer { animation: none; }
+}
+
+/* ── Ajustes para celular ───────────────────────────────────── */
 @media (max-width: 520px) {
   .day-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  /* Seletor de dias mais confortável: menos espaço entre botões,
+     números legíveis e altura boa para tocar com o dedo. */
+  .day-selector {
+    gap: 0.3rem;
+  }
+
   .day-selector__btn {
-    padding: 0.5rem 0.15rem;
+    padding: 0.55rem 0.1rem;
+    min-height: 56px;
+    justify-content: center;
+    gap: 0.1rem;
   }
 
   .day-selector__short {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
+  }
+
+  .day-selector__date {
+    font-size: 1rem;
   }
 }
 

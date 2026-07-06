@@ -15,7 +15,7 @@ const PLATFORM_COLORS = {
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
 const FALLBACK   = 'https://placehold.co/100x140?text=?'
 
-export default function AnimeCard({ anime, status, onToggle, onClick }) {
+export default function AnimeCard({ anime, status, onToggle, onClick, aired = false }) {
   const airTime = anime.episodeDate
     ? new Date(anime.episodeDate).toLocaleTimeString('pt-BR', {
         hour: '2-digit',
@@ -55,6 +55,7 @@ export default function AnimeCard({ anime, status, onToggle, onClick }) {
           {anime.episodeNumber && (
             <span className="anime-card__episode">EP {anime.episodeNumber}</span>
           )}
+          {aired && <span className="anime-card__aired">✓ já saiu</span>}
         </div>
 
         {platforms.length > 0 && (

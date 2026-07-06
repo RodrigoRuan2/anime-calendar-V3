@@ -111,6 +111,19 @@
   color: var(--text-muted);
 }
 
+/* Selo "já saiu": episódio de hoje cujo horário já passou.
+   Não depende só da cor (tem o ✓ e o texto), por acessibilidade. */
+.anime-card__aired {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: rgba(120, 190, 130, 0.12);
+  border: 1px solid rgba(120, 190, 130, 0.35);
+  color: #8fce9b;
+}
+
 /* Plataformas */
 .anime-card__platforms {
   display: flex;

@@ -59,10 +59,19 @@ export default function Calendar({
   })
 
   if (loading) {
+    // "Esqueletos": placeholders com o formato dos cards enquanto os dados
+    // chegam. Passa uma sensação de app mais rápido do que um spinner girando.
     return (
-      <div className="calendar-status">
-        <div className="loader" />
-        <p>Carregando cronograma...</p>
+      <div className="calendar-container">
+        <div className="day-grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div className="card-skeleton" key={i}>
+              <div className="card-skeleton__poster skeleton-shimmer" />
+              <div className="card-skeleton__line skeleton-shimmer" />
+              <div className="card-skeleton__line card-skeleton__line--short skeleton-shimmer" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
@@ -82,24 +91,26 @@ export default function Calendar({
   const animesDoDia = schedule[selectedDay] || []
   const isSelectedToday = !isNextWeek && selectedDay === todayKey
 
+  // Um episódio "já saiu" se o horário dele já passou. Só faz sentido na
+  // semana atual (na próxima semana as datas ainda não chegaram).
+  const agora = new Date()
+  const jaSaiu = (anime) =>
+    !isNextWeek && anime.episodeDate && new Date(anime.episodeDate) < agora
+
   return (
     <div className="calendar-container">
       <div className="calendar-header">
-        <div className="calendar-title">
-          <h2>{isNextWeek ? 'Próxima Semana' : 'Esta Semana'}</h2>
-          <span className="calendar-date-range">
-            {weekDates[0].toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })} - {weekDates[6].toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
-          </span>
-        </div>
+        <span className="calendar-week-label">
+          {isNextWeek ? 'Próxima semana' : 'Esta semana'}
+          {' · '}
+          {weekDates[0].toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })} – {weekDates[6].toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+        </span>
 
         <button
           className="week-toggle-btn"
           onClick={() => setIsNextWeek(!isNextWeek)}
           aria-label={isNextWeek ? 'Voltar para esta semana' : 'Ver próxima semana'}
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M7 8L10 11L13 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
           {isNextWeek ? 'Esta Semana' : 'Próxima Semana'}
         </button>
       </div>
@@ -155,6 +166,7 @@ export default function Calendar({
                 status={getStatus(anime)}
                 onToggle={onToggle}
                 onClick={onAnimeClick}
+                aired={jaSaiu(anime)}
               />
             ))}
           </div>

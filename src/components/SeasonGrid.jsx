@@ -72,9 +72,6 @@ export default function SeasonGrid({
           onClick={() => setIsNextSeason(!isNextSeason)}
           aria-label={isNextSeason ? 'Voltar para temporada atual' : 'Ver próxima temporada'}
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M7 8L10 11L13 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
           {isNextSeason ? 'Temporada Atual' : 'Próxima Temporada'}
         </button>
       </div>
