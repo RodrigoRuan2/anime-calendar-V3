@@ -1,8 +1,8 @@
 import axios from 'axios'
 
-const SUPABASE_URL   = import.meta.env.VITE_SUPABASE_FUNCTION_URL
-const DIRECT_API_KEY = import.meta.env.VITE_ANIMESCHEDULE_API_KEY
-const CACHE_TTL_MS   = 5 * 60 * 1000 // 5 minutos
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_FUNCTION_URL
+const CACHE_TTL_MS = 5 * 60 * 1000
+const JIKAN_MAX_RETRIES = 5
 
 const jikanApi = axios.create({
   baseURL: 'https://api.jikan.moe/v4',
@@ -13,13 +13,22 @@ function cacheGet(key) {
     const raw = sessionStorage.getItem(key)
     if (!raw) return null
     const { data, ts } = JSON.parse(raw)
-    if (Date.now() - ts > CACHE_TTL_MS) { sessionStorage.removeItem(key); return null }
+    if (Date.now() - ts > CACHE_TTL_MS) {
+      sessionStorage.removeItem(key)
+      return null
+    }
     return data
-  } catch { return null }
+  } catch {
+    return null
+  }
 }
 
 function cacheSet(key, data) {
-  try { sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })) } catch {}
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }))
+  } catch {
+    // Storage can be unavailable.
+  }
 }
 
 export async function getWeeklyTimetable() {
@@ -27,28 +36,21 @@ export async function getWeeklyTimetable() {
   const cached = cacheGet(cacheKey)
   if (cached) return cached
 
-  let data
-  if (SUPABASE_URL) {
-    const params = new URLSearchParams({ path: '/api/v3/timetables/sub', timezone: 'America/Sao_Paulo' })
-    const response = await axios.get(`${SUPABASE_URL}?${params.toString()}`)
-    data = response.data
-  } else {
-    const response = await axios.get('/api-proxy/api/v3/timetables/sub', {
-      params: { timezone: 'America/Sao_Paulo' },
-      headers: { Authorization: `Bearer ${DIRECT_API_KEY}` },
-    })
-    data = response.data
+  if (!SUPABASE_URL) {
+    throw new Error('A URL da função Supabase não foi configurada.')
   }
 
-  cacheSet(cacheKey, data)
-  return data
+  const params = new URLSearchParams({ timezone: 'America/Sao_Paulo' })
+  const response = await axios.get(SUPABASE_URL + '?' + params.toString())
+  cacheSet(cacheKey, response.data)
+  return response.data
 }
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = 3) {
+export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = JIKAN_MAX_RETRIES) {
   const currentDate = new Date()
   const month = currentDate.getMonth() + 1
   const year = currentDate.getFullYear()
@@ -68,31 +70,31 @@ export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = 3) {
   else season = 'fall'
 
   try {
-    const cacheKey = `anicalseason_${targetYear}_${season}_p${page}`
+    const cacheKey = 'anicalseason_' + targetYear + '_' + season + '_p' + page
     const cached = cacheGet(cacheKey)
     if (cached) return cached
 
-    const response = await jikanApi.get(`/seasons/${targetYear}/${season}`, {
-      params: { page },
+    const response = await jikanApi.get('/seasons/' + targetYear + '/' + season, {
+      params: { page, limit: 24 },
     })
-
-    const list = response.data?.data || []
 
     const unique = []
     const ids = new Set()
 
-    for (const anime of list) {
+    for (const anime of response.data?.data || []) {
       if (!ids.has(anime.mal_id)) {
         ids.add(anime.mal_id)
         unique.push(anime)
       }
     }
 
-    const filtered = unique.filter(
-      (anime) =>
-        (seasonOffset === 0 ? anime.status === 'Currently Airing' : anime.status === 'Not yet aired') &&
-        anime.type !== 'Music'
-    )
+    const filtered = unique.filter((anime) => {
+      const isRelevant = seasonOffset === 0
+        ? anime.airing || anime.status === 'Currently Airing'
+        : anime.status === 'Not yet aired'
+
+      return isRelevant && anime.type !== 'Music'
+    })
 
     const result = {
       data: filtered,
@@ -102,7 +104,12 @@ export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = 3) {
     return result
   } catch (error) {
     if (error.response?.status === 429 && retries > 0) {
-      const waitTime = 1000 * (4 - retries)
+      const retryAfter = Number(error.response.headers?.['retry-after'])
+      const attempt = JIKAN_MAX_RETRIES - retries
+      const waitTime = Number.isFinite(retryAfter)
+        ? retryAfter * 1000
+        : Math.min(16000, 1000 * 2 ** attempt)
+
       await delay(waitTime)
       return getSeasonAnime(page, seasonOffset, retries - 1)
     }
