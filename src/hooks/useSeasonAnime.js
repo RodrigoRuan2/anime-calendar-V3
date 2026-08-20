@@ -14,7 +14,6 @@ export function useSeasonAnime(seasonOffset = 0) {
 
     try {
       const res = await getSeasonAnime(pageNumber, seasonOffset)
-
       setAnimes((prev) => {
         const map = new Map()
         for (const anime of [...prev, ...res.data]) {
@@ -22,7 +21,6 @@ export function useSeasonAnime(seasonOffset = 0) {
         }
         return Array.from(map.values())
       })
-
       setHasMore(res.hasNext)
       setPage(pageNumber)
     } catch (err) {
@@ -45,11 +43,11 @@ export function useSeasonAnime(seasonOffset = 0) {
     fetchPage(1)
   }, [fetchPage])
 
-  function loadMore() {
+  const loadMore = useCallback(() => {
     if (hasMore && !loading) {
       fetchPage(page + 1)
     }
-  }
+  }, [fetchPage, hasMore, loading, page])
 
   return { animes, loading, loadMore, hasMore, page, fetchPage, error }
 }
