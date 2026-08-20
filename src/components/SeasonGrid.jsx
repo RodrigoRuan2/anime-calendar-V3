@@ -4,7 +4,7 @@ import SeasonCard from './SeasonCard'
 import '../styles/SeasonGrid.css'
 
 const FILTERS = [
-  { key: 'all',      label: 'Todos'        },
+  { key: 'all', label: 'Todos' },
   { key: 'watching', label: '▶ Assistindo' },
 ]
 
@@ -17,7 +17,6 @@ export default function SeasonGrid({
 }) {
   const [isNextSeason, setIsNextSeason] = useState(false)
   const { animes, loading, loadMore, hasMore, error } = useSeasonAnime(isNextSeason ? 1 : 0)
-
   const loadMoreRef = useRef(null)
 
   useEffect(() => {
@@ -27,20 +26,12 @@ export default function SeasonGrid({
           loadMore()
         }
       },
-      {
-        threshold: 1,
-      }
+      { threshold: 1 },
     )
 
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current)
-    }
-
-    return () => {
-      if (loadMoreRef.current) {
-        observer.unobserve(loadMoreRef.current)
-      }
-    }
+    const target = loadMoreRef.current
+    if (target) observer.observe(target)
+    return () => observer.disconnect()
   }, [hasMore, loadMore])
 
   if (loading && animes.length === 0) {
@@ -54,19 +45,15 @@ export default function SeasonGrid({
 
   const filtered = animes.filter((anime) => {
     const status = getStatus(anime)
-    if (activeFilter === 'watching') return status.watching
-    return true
+    return activeFilter !== 'watching' || status.watching
   })
 
   return (
     <div className="season-grid-wrapper">
       <div className="season-header">
         <div className="season-title">
-          <h2>
-            {isNextSeason ? 'Próxima Temporada' : 'Temporada Atual'}
-          </h2>
+          <h2>{isNextSeason ? 'Próxima Temporada' : 'Temporada Atual'}</h2>
         </div>
-
         <button
           className="season-toggle-btn"
           onClick={() => setIsNextSeason(!isNextSeason)}
@@ -77,24 +64,23 @@ export default function SeasonGrid({
       </div>
 
       <div className="season-filters">
-        {FILTERS.map((f) => (
+        {FILTERS.map((filter) => (
           <button
-            key={f.key}
-            className={`season-filter-btn ${activeFilter === f.key ? 'active' : ''}`}
-            onClick={() => onFilterChange(f.key)}
+            key={filter.key}
+            className={'season-filter-btn ' + (activeFilter === filter.key ? 'active' : '')}
+            onClick={() => onFilterChange(filter.key)}
           >
-            {f.label}
+            {filter.label}
           </button>
         ))}
         <span className="season-count">{filtered.length} animes</span>
       </div>
 
-      {error && animes.length > 0 && (
+      {error ? (
         <div className="calendar-status calendar-status--error">
           <p>⚠️ {error}</p>
         </div>
-      )}
-      {filtered.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <p className="season-empty">Nenhum anime encontrado.</p>
       ) : (
         <div className="season-grid">
@@ -115,7 +101,6 @@ export default function SeasonGrid({
           Carregar mais
         </button>
       )}
-
       <div ref={loadMoreRef} style={{ height: '20px' }} />
     </div>
   )
