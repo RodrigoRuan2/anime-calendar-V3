@@ -51,30 +51,16 @@ function delay(ms) {
 }
 
 export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = JIKAN_MAX_RETRIES) {
-  const currentDate = new Date()
-  const month = currentDate.getMonth() + 1
-  const year = currentDate.getFullYear()
-
-  let targetMonth = month + seasonOffset * 3
-  let targetYear = year
-
-  while (targetMonth > 12) {
-    targetMonth -= 12
-    targetYear += 1
-  }
-
-  let season = ''
-  if (targetMonth <= 3) season = 'winter'
-  else if (targetMonth <= 6) season = 'spring'
-  else if (targetMonth <= 9) season = 'summer'
-  else season = 'fall'
+  // A API mantém estas rotas alinhadas com a temporada real, mesmo quando a
+  // data configurada no aparelho está incorreta.
+  const endpoint = seasonOffset === 0 ? '/seasons/now' : '/seasons/upcoming'
 
   try {
-    const cacheKey = 'anicalseason_' + targetYear + '_' + season + '_p' + page
+    const cacheKey = `anicalseason_v2_${seasonOffset === 0 ? 'now' : 'upcoming'}_p${page}`
     const cached = cacheGet(cacheKey)
     if (cached) return cached
 
-    const response = await jikanApi.get('/seasons/' + targetYear + '/' + season, {
+    const response = await jikanApi.get(endpoint, {
       params: { page, limit: 24 },
     })
 
@@ -103,7 +89,8 @@ export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = JIKAN
     cacheSet(cacheKey, result)
     return result
   } catch (error) {
-    if (error.response?.status === 429 && retries > 0) {
+    const status = error.response?.status
+    if ((status === 429 || (status >= 500 && status < 600)) && retries > 0) {
       const retryAfter = Number(error.response.headers?.['retry-after'])
       const attempt = JIKAN_MAX_RETRIES - retries
       const waitTime = Number.isFinite(retryAfter)
