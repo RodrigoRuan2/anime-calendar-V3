@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getAniListDetails } from '../services/aniListApi'
 import '../styles/AnimeModal.css'
 
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
@@ -31,38 +32,43 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
     }
   }, [onClose])
 
-  // Busca dados extras do Jikan se tiver mal_id
+  // Busca sinopse e metadados na AniList para itens do calendário e temporada.
   useEffect(() => {
-    if (!anime.mal_id) return
-    setLoadingDetails(true)
-    fetch(`https://api.jikan.moe/v4/anime/${anime.mal_id}`)
-      .then((r) => r.json())
-      .then((json) => setDetails(json.data))
-      .catch(() => setDetails(null))
-      .finally(() => setLoadingDetails(false))
-  }, [anime.mal_id])
+    const controller = new AbortController()
+    const searchTitle = anime.romaji || anime.english || anime.title
 
-  const data = details || anime
+    setLoadingDetails(true)
+    getAniListDetails(searchTitle, controller.signal)
+      .then((data) => setDetails(data))
+      .catch((error) => {
+        if (error.name !== 'AbortError') setDetails(null)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoadingDetails(false)
+      })
+
+    return () => controller.abort()
+  }, [anime.english, anime.romaji, anime.title])
 
   const posterUrl =
-    details?.images?.jpg?.large_image_url ||
-    details?.images?.jpg?.image_url ||
+    details?.coverImage?.large ||
+    details?.coverImage?.medium ||
     anime.images?.jpg?.large_image_url ||
     (anime.imageVersionRoute ? `${IMAGE_BASE}${anime.imageVersionRoute}` : null) ||
     FALLBACK
 
-  const title      = data.title || anime.title || '—'
-  const titleJp    = details?.title_japanese || ''
-  const synopsis   = details?.synopsis || 'Sem sinopse disponível.'
-  const score      = details?.score
+  const title      = details?.title?.romaji || details?.title?.english || anime.title || '—'
+  const titleJp    = details?.title?.native || ''
+  const synopsis   = details?.description || 'Sem sinopse disponível.'
+  const score      = details?.averageScore
   const episodes   = details?.episodes
   const status_str = details?.status || anime.status || ''
-  const type       = details?.type || ''
-  const studios    = details?.studios?.map((s) => s.name).join(', ') || ''
+  const type       = details?.format || ''
+  const studios    = details?.studios?.nodes?.map((s) => s.name).join(', ') || ''
   const genres     = details?.genres || []
   const streams    = anime.streams || []
   const isWatching = status?.watching
-  const isAiring   = status_str === 'Currently Airing'
+  const isAiring   = status_str === 'RELEASING' || status_str === 'Currently Airing'
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -105,8 +111,8 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
 
               {genres.length > 0 && (
                 <div className="modal__genres">
-                  {genres.map((g) => (
-                    <span key={g.mal_id} className="modal__genre">{g.name}</span>
+                  {genres.map((genre) => (
+                    <span key={genre} className="modal__genre">{genre}</span>
                   ))}
                 </div>
               )}
