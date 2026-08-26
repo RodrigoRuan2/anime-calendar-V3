@@ -50,6 +50,30 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+async function getCurrentSeasonFallback(page) {
+  // O cronograma vem da nossa Edge Function e contém os animes em exibição.
+  // Ele evita deixar a aba vazia quando a API pública Jikan fica indisponível.
+  if (page > 1) return { data: [], hasNext: false }
+
+  const cacheKey = 'anicalseason_fallback_p1'
+  const cached = cacheGet(cacheKey)
+  if (cached) return cached
+
+  const schedule = await getWeeklyTimetable()
+  const seen = new Set()
+  const data = schedule.filter((anime) => {
+    const key = anime.route || anime.title
+    const isOngoing = anime.status === 'Ongoing' || anime.airingStatus === 'airing'
+    if (!key || !isOngoing || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  const result = { data, hasNext: false }
+  cacheSet(cacheKey, result)
+  return result
+}
+
 export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = JIKAN_MAX_RETRIES) {
   // A API mantém estas rotas alinhadas com a temporada real, mesmo quando a
   // data configurada no aparelho está incorreta.
@@ -90,6 +114,9 @@ export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = JIKAN
     return result
   } catch (error) {
     const status = error.response?.status
+    if (seasonOffset === 0 && status >= 500 && status < 600) {
+      return getCurrentSeasonFallback(page)
+    }
     if ((status === 429 || (status >= 500 && status < 600)) && retries > 0) {
       const retryAfter = Number(error.response.headers?.['retry-after'])
       const attempt = JIKAN_MAX_RETRIES - retries

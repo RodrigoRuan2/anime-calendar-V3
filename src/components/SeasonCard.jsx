@@ -18,7 +18,7 @@ export default function SeasonCard({ anime, status, onToggle, onClick }) {
       {/* Poster */}
       <div className="season-card__poster">
         <img
-          src={anime.images?.jpg?.image_url}
+          src={imageUrl || anime.images?.jpg?.image_url || FALLBACK}
           alt={anime.title}
           loading="lazy"
           onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK }}
