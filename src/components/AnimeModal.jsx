@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getAniListDetails } from '../services/aniListApi'
+import { translateSynopsis } from '../services/translationApi'
 import '../styles/AnimeModal.css'
 
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
@@ -39,6 +40,16 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
 
     setLoadingDetails(true)
     getAniListDetails(searchTitle, controller.signal)
+      .then(async (data) => {
+        if (!data?.description) return data
+
+        try {
+          const translatedDescription = await translateSynopsis(data.description, controller.signal)
+          return { ...data, description: translatedDescription }
+        } catch {
+          return data
+        }
+      })
       .then((data) => setDetails(data))
       .catch((error) => {
         if (error.name !== 'AbortError') setDetails(null)
