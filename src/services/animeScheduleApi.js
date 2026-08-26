@@ -55,7 +55,7 @@ async function getCurrentSeasonFallback(page) {
   // Ele evita deixar a aba vazia quando a API pública Jikan fica indisponível.
   if (page > 1) return { data: [], hasNext: false }
 
-  const cacheKey = 'anicalseason_fallback_p1'
+  const cacheKey = 'anicalseason_schedule_v2_p1'
   const cached = cacheGet(cacheKey)
   if (cached) return cached
 
@@ -75,9 +75,12 @@ async function getCurrentSeasonFallback(page) {
 }
 
 export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = JIKAN_MAX_RETRIES) {
-  // A API mantém estas rotas alinhadas com a temporada real, mesmo quando a
-  // data configurada no aparelho está incorreta.
-  const endpoint = seasonOffset === 0 ? '/seasons/now' : '/seasons/upcoming'
+  // O AnimeSchedule é a fonte principal da temporada em exibição. Ao
+  // contrário da Jikan, ela é a mesma API que alimenta o calendário e não
+  // deixa a tela indisponível por erros 504 intermitentes.
+  if (seasonOffset === 0) return getCurrentSeasonFallback(page)
+
+  const endpoint = '/seasons/upcoming'
 
   try {
     const cacheKey = `anicalseason_v2_${seasonOffset === 0 ? 'now' : 'upcoming'}_p${page}`
@@ -99,11 +102,7 @@ export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = JIKAN
     }
 
     const filtered = unique.filter((anime) => {
-      const isRelevant = seasonOffset === 0
-        ? anime.airing || anime.status === 'Currently Airing'
-        : anime.status === 'Not yet aired'
-
-      return isRelevant && anime.type !== 'Music'
+      return anime.status === 'Not yet aired' && anime.type !== 'Music'
     })
 
     const result = {
@@ -114,9 +113,6 @@ export async function getSeasonAnime(page = 1, seasonOffset = 0, retries = JIKAN
     return result
   } catch (error) {
     const status = error.response?.status
-    if (seasonOffset === 0 && status >= 500 && status < 600) {
-      return getCurrentSeasonFallback(page)
-    }
     if ((status === 429 || (status >= 500 && status < 600)) && retries > 0) {
       const retryAfter = Number(error.response.headers?.['retry-after'])
       const attempt = JIKAN_MAX_RETRIES - retries
