@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getSeasonAnime } from '../services/animeScheduleApi'
+import { getAnimeKey } from '../utils/animeKey'
 
 export function useSeasonAnime(seasonOffset = 0) {
   const [animes, setAnimes] = useState([])
@@ -17,7 +18,7 @@ export function useSeasonAnime(seasonOffset = 0) {
       setAnimes((prev) => {
         const map = new Map()
         for (const anime of [...prev, ...res.data]) {
-          map.set(anime.mal_id, anime)
+          map.set(getAnimeKey(anime), anime)
         }
         return Array.from(map.values())
       })
