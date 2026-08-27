@@ -108,6 +108,14 @@ export async function getMonthlyMovies(date = new Date()) {
   return data
 }
 
+export async function getYearlyMovies(year) {
+  const results = await Promise.all(
+    Array.from({ length: 12 }, (_, month) => getMonthlyMovies(new Date(year, month, 1))),
+  )
+
+  return results.map((movies, month) => ({ month, movies }))
+}
+
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }

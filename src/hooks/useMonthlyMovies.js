@@ -1,22 +1,22 @@
 import { useEffect, useState } from 'react'
-import { getMonthlyMovies } from '../services/animeScheduleApi'
+import { getYearlyMovies } from '../services/animeScheduleApi'
 
-export function useMonthlyMovies() {
-  const [movies, setMovies] = useState([])
+export function useMonthlyMovies(year) {
+  const [months, setMonths] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
 
-    getMonthlyMovies()
+    getYearlyMovies(year)
       .then((data) => {
-        if (!controller.signal.aborted) setMovies(data)
+        if (!controller.signal.aborted) setMonths(data)
       })
       .catch((err) => {
         if (!controller.signal.aborted) {
           console.error(err)
-          setError('Não foi possível buscar os filmes deste mês.')
+          setError('Não foi possível buscar os filmes deste ano.')
         }
       })
       .finally(() => {
@@ -24,7 +24,7 @@ export function useMonthlyMovies() {
       })
 
     return () => controller.abort()
-  }, [])
+  }, [year])
 
-  return { movies, loading, error }
+  return { months, loading, error }
 }

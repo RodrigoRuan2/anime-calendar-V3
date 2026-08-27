@@ -4,9 +4,7 @@
   gap: 2.25rem;
 }
 
-.movies-page__intro {
-  padding: 0.8rem 0.35rem 0;
-}
+.movies-page__intro { padding: 0.8rem 0.35rem 0; }
 
 .movies-page__eyebrow {
   color: var(--accent-gold);
@@ -16,7 +14,7 @@
 }
 
 .movies-page__intro h1,
-.movie-section__header h2 {
+.movie-month__header h2 {
   font-family: 'Bebas Neue', sans-serif;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -28,7 +26,6 @@
 }
 
 .movies-page__intro p,
-.movie-section__header p,
 .movie-section__empty {
   color: var(--text-muted);
   font-size: 0.86rem;
@@ -36,20 +33,48 @@
 
 .movies-page__intro p { margin-top: 0.35rem; }
 
-.movie-section {
-  border-top: 1px solid var(--border);
-  padding-top: 1rem;
+.movies-page__years {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
-.movie-section__header {
+.movies-year-btn {
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.45rem 1rem;
+}
+
+.movies-year-btn--active {
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+  color: #18120a;
+}
+
+.movies-year-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.movie-month {
+  border-top: 1px solid var(--border);
+  padding-top: 0.85rem;
+}
+
+.movie-month__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 0.35rem 1rem;
+  margin: 0 0.35rem 0.3rem;
 }
 
-.movie-section__header h2 { font-size: 1.55rem; }
-.movie-section__header p { margin-top: 0.1rem; }
+.movie-month__header h2 { font-size: 1.55rem; }
 
 .movie-section__count {
   display: inline-flex;
@@ -66,3 +91,10 @@
 }
 
 .movie-section__empty { padding: 1.5rem 0.35rem; }
+
+.movie-month__summary {
+  color: var(--accent-gold);
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin: 0 0.35rem 0.8rem;
+}
