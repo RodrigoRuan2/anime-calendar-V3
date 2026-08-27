@@ -1,0 +1,68 @@
+.movies-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+
+.movies-page__intro {
+  padding: 0.8rem 0.35rem 0;
+}
+
+.movies-page__eyebrow {
+  color: var(--accent-gold);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.movies-page__intro h1,
+.movie-section__header h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.movies-page__intro h1 {
+  font-size: clamp(2rem, 5vw, 3.1rem);
+  margin-top: 0.15rem;
+}
+
+.movies-page__intro p,
+.movie-section__header p,
+.movie-section__empty {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.movies-page__intro p { margin-top: 0.35rem; }
+
+.movie-section {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.movie-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0.35rem 1rem;
+}
+
+.movie-section__header h2 { font-size: 1.55rem; }
+.movie-section__header p { margin-top: 0.1rem; }
+
+.movie-section__count {
+  display: inline-flex;
+  min-width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(200, 144, 26, 0.14);
+  border: 1px solid rgba(200, 144, 26, 0.35);
+  border-radius: 99px;
+  color: var(--accent-gold);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.movie-section__empty { padding: 1.5rem 0.35rem; }

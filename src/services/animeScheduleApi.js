@@ -31,19 +31,81 @@ function cacheSet(key, data) {
   }
 }
 
-export async function getWeeklyTimetable() {
-  const cacheKey = 'anicaltimetable'
+function getMondayDate(weekOffset = 0) {
+  const date = new Date()
+  const day = date.getDay()
+  const daysSinceMonday = (day + 6) % 7
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() - daysSinceMonday + weekOffset * 7)
+  return date.toISOString().slice(0, 10)
+}
+
+function normalizeTsuzukiEpisode(episode) {
+  return {
+    title: episode.title,
+    route: `anilist-${episode.mediaId}`,
+    anilistId: episode.mediaId,
+    episodeDate: episode.airingAtIso,
+    episodeNumber: episode.episode,
+    airingStatus: 'unaired',
+    status: 'Ongoing',
+    coverImage: episode.coverImage,
+    // A Tsuzuki informa a plataforma, mas não disponibiliza uma URL oficial
+    // do streaming. Não criamos links inexistentes no card.
+    streams: [],
+    platformName: episode.platform,
+    scheduleSource: 'tsuzuki',
+    timeEstimated: episode.estimated,
+  }
+}
+
+async function getTsuzukiSchedule(start, days, format) {
+  const params = new URLSearchParams({ start, days: String(days), airType: 'sub' })
+  if (format) params.set('format', format)
+
+  const response = await axios.get(`https://tsuzuki.top/api/v1/schedule?${params.toString()}`)
+  if (!response.data?.ok || !Array.isArray(response.data.episodes)) {
+    throw new Error('A agenda de lançamentos não retornou dados válidos.')
+  }
+
+  return response.data.episodes.map(normalizeTsuzukiEpisode)
+}
+
+export async function getWeeklyTimetable(weekOffset = 0) {
+  const cacheKey = `anicaltimetable_v2_${weekOffset}`
   const cached = cacheGet(cacheKey)
   if (cached) return cached
+
+  // A AnimeSchedule é excelente para a semana atual, inclusive pelos links
+  // oficiais. Para a próxima semana usamos uma API baseada em datas reais:
+  // antes, o app apenas somava 7 dias aos episódios desta semana.
+  if (weekOffset > 0) {
+    const data = await getTsuzukiSchedule(getMondayDate(weekOffset), 7)
+    cacheSet(cacheKey, data)
+    return data
+  }
 
   if (!SUPABASE_URL) {
     throw new Error('A URL da função Supabase não foi configurada.')
   }
 
-  const params = new URLSearchParams({ timezone: 'America/Sao_Paulo' })
+  const params = new URLSearchParams({ tz: 'America/Sao_Paulo' })
   const response = await axios.get(SUPABASE_URL + '?' + params.toString())
   cacheSet(cacheKey, response.data)
   return response.data
+}
+
+export async function getMonthlyMovies(date = new Date()) {
+  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1)
+  const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+  const start = firstDay.toISOString().slice(0, 10)
+  const cacheKey = `anicalmovies_v1_${start}`
+  const cached = cacheGet(cacheKey)
+  if (cached) return cached
+
+  const data = await getTsuzukiSchedule(start, lastDay.getDate(), 'MOVIE')
+  cacheSet(cacheKey, data)
+  return data
 }
 
 function delay(ms) {

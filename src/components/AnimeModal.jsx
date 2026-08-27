@@ -66,6 +66,7 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
     details?.coverImage?.medium ||
     anime.images?.jpg?.large_image_url ||
     (anime.imageVersionRoute ? `${IMAGE_BASE}${anime.imageVersionRoute}` : null) ||
+    anime.coverImage ||
     FALLBACK
 
   const title      = details?.title?.romaji || details?.title?.english || anime.title || '—'

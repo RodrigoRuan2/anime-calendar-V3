@@ -4,6 +4,7 @@ export function getAnimeKey(animeOrKey) {
   if (typeof animeOrKey === 'object') {
     return (
       animeOrKey.mal_id ||
+      animeOrKey.anilistId ||
       animeOrKey.route ||
       animeOrKey.title?.toLowerCase().replace(/\s+/g, '-') ||
       animeOrKey.episodeDate ||

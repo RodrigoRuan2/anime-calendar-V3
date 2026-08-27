@@ -111,6 +111,19 @@
   color: var(--text-muted);
 }
 
+.anime-card__estimated {
+  color: var(--accent-gold);
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
+.anime-card__platform-name {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+}
+
 /* Selo "já saiu": episódio de hoje cujo horário já passou.
    Não depende só da cor (tem o ✓ e o texto), por acessibilidade. */
 .anime-card__aired {

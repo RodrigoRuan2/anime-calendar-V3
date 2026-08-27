@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import Calendar from './components/Calendar'
 import SeasonGrid from './components/SeasonGrid'
+import Movies from './components/Movies'
 import Sidebar from './components/Sidebar'
 import AnimeModal from './components/AnimeModal'
 import { useAnimeStatus } from './hooks/useAnimeStatus'
@@ -11,6 +12,7 @@ import './styles/App.css'
 const TABS = [
   { key: 'calendar', label: '📅 Calendário' },
   { key: 'season',   label: '🎌 Temporada'  },
+  { key: 'movies',   label: '🎬 Filmes'     },
 ]
 
 export default function App() {
@@ -123,6 +125,14 @@ export default function App() {
               onFilterChange={setSeasonFilter}
               onToggle={toggleStatus}
               getStatus={getStatus}
+              onAnimeClick={setSelectedAnime}
+            />
+          )}
+
+          {activeTab === 'movies' && (
+            <Movies
+              getStatus={getStatus}
+              onToggle={toggleStatus}
               onAnimeClick={setSelectedAnime}
             />
           )}

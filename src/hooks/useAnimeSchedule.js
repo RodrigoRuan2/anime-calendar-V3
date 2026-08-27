@@ -3,7 +3,7 @@ import { getWeeklyTimetable } from '../services/animeScheduleApi'
 
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
-function groupByDay(animeArray, weekOffset = 0) {
+function groupByDay(animeArray) {
   const grouped = {
     monday: [],
     tuesday: [],
@@ -18,10 +18,6 @@ function groupByDay(animeArray, weekOffset = 0) {
     if (!anime.episodeDate) return
 
     const date = new Date(anime.episodeDate)
-
-    if (weekOffset > 0) {
-      date.setDate(date.getDate() + weekOffset * 7)
-    }
 
     const day = DAYS[date.getDay()]
 
@@ -47,8 +43,8 @@ export function useAnimeSchedule(weekOffset = 0) {
       try {
         setLoading(true)
         setError(null)
-        const data = await getWeeklyTimetable()
-        const grouped = groupByDay(data, weekOffset)
+        const data = await getWeeklyTimetable(weekOffset)
+        const grouped = groupByDay(data)
         setSchedule(grouped)
       } catch (err) {
         setError('Erro ao buscar o cronograma. Verifique sua API key.')

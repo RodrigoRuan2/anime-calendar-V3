@@ -26,7 +26,7 @@ export default function AnimeCard({ anime, status, onToggle, onClick, aired = fa
   const platforms = anime.streams || []
   const imageUrl  = anime.imageVersionRoute
     ? `${IMAGE_BASE}${anime.imageVersionRoute}`
-    : null
+    : anime.coverImage || null
 
   const isWatching = status?.watching
 
@@ -55,8 +55,13 @@ export default function AnimeCard({ anime, status, onToggle, onClick, aired = fa
           {anime.episodeNumber && (
             <span className="anime-card__episode">EP {anime.episodeNumber}</span>
           )}
+          {anime.timeEstimated && <span className="anime-card__estimated">horário estimado</span>}
           {aired && <span className="anime-card__aired">✓ já saiu</span>}
         </div>
+
+        {anime.platformName && (
+          <span className="anime-card__platform-name">Disponível em {anime.platformName}</span>
+        )}
 
         {platforms.length > 0 && (
           <div className="anime-card__platforms">
