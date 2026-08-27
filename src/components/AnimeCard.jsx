@@ -16,7 +16,9 @@ const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
 const FALLBACK   = 'https://placehold.co/100x140?text=?'
 
 export default function AnimeCard({ anime, status, onToggle, onClick, aired = false }) {
-  const airTime = anime.episodeDate
+  const airTime = anime.releaseDateOnly
+    ? new Date(anime.episodeDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+    : anime.episodeDate
     ? new Date(anime.episodeDate).toLocaleTimeString('pt-BR', {
         hour: '2-digit',
         minute: '2-digit',
@@ -51,8 +53,8 @@ export default function AnimeCard({ anime, status, onToggle, onClick, aired = fa
         <h3 className="anime-card__title">{anime.title}</h3>
 
         <div className="anime-card__meta">
-          <span className="anime-card__time">⏱ {airTime}</span>
-          {anime.episodeNumber && (
+          <span className="anime-card__time">{anime.releaseDateOnly ? '📅' : '⏱'} {airTime}</span>
+          {anime.episodeNumber && !anime.releaseDateOnly && (
             <span className="anime-card__episode">EP {anime.episodeNumber}</span>
           )}
           {anime.timeEstimated && <span className="anime-card__estimated">horário estimado</span>}

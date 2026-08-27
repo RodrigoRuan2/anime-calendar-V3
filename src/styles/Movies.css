@@ -4,7 +4,30 @@
   gap: 2.25rem;
 }
 
-.movies-page__intro { padding: 0.8rem 0.35rem 0; }
+.movies-page__intro {
+  position: relative;
+  overflow: hidden;
+  min-height: 230px;
+  padding: 2.1rem clamp(1.25rem, 4vw, 3rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #080b11;
+}
+
+.movies-page__hero-image {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(8, 8, 16, 0.96) 0%, rgba(8, 8, 16, 0.81) 46%, rgba(8, 8, 16, 0.28) 100%),
+    linear-gradient(0deg, rgba(8, 8, 16, 0.65), transparent 55%),
+    url('/anime-calendar-V3/images/movies-hero-v2.png') center / cover no-repeat;
+}
+
+.movies-page__intro-content {
+  position: relative;
+  z-index: 1;
+  max-width: 650px;
+}
 
 .movies-page__eyebrow {
   color: var(--accent-gold);

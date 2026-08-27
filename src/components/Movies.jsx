@@ -54,9 +54,11 @@ export default function Movies({ getStatus, onToggle, onAnimeClick }) {
   return (
     <div className="movies-page">
       <header className="movies-page__intro">
+        <div className="movies-page__hero-image" aria-hidden="true" />
+        <div className="movies-page__intro-content">
         <span className="movies-page__eyebrow">FILMES DE ANIME</span>
         <h1>Lançamentos de {selectedYear}</h1>
-        <p>Veja os filmes de janeiro a dezembro. A agenda indica quando o horário ainda é estimado.</p>
+        <p>Veja os filmes de janeiro a dezembro, incluindo anúncios sem horário de streaming.</p>
         <div className="movies-page__years" role="tablist" aria-label="Ano dos filmes">
           {[currentYear, currentYear + 1].map((year) => (
             <button
@@ -70,6 +72,7 @@ export default function Movies({ getStatus, onToggle, onAnimeClick }) {
               {year}
             </button>
           ))}
+        </div>
         </div>
       </header>
 

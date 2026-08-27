@@ -20,6 +20,27 @@ const DETAILS_QUERY = `
   }
 `
 
+const MOVIES_BY_YEAR_QUERY = `
+  query ($page: Int!, $yearStart: FuzzyDateInt, $nextYearStart: FuzzyDateInt) {
+    Page(page: $page, perPage: 50) {
+      pageInfo { hasNextPage }
+      media(
+        type: ANIME
+        format: MOVIE
+        startDate_greater: $yearStart
+        startDate_lesser: $nextYearStart
+        sort: START_DATE
+      ) {
+        id
+        title { romaji english native }
+        startDate { year month day }
+        coverImage { large medium }
+        status
+      }
+    }
+  }
+`
+
 function cacheKey(title) {
   return `anical_anilist_${title.toLowerCase().trim()}`
 }
@@ -61,4 +82,46 @@ export async function getAniListDetails(title, signal) {
   const data = payload.data?.Page?.media?.[0] ?? null
   if (data) cacheDetails(title, data)
   return data
+}
+
+export async function getAniListMoviesByYear(year) {
+  const key = `anical_anilist_movies_${year}`
+
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(key))
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) return cached.data
+  } catch {
+    // A consulta continua funcionando quando o armazenamento não está disponível.
+  }
+
+  const movies = []
+  let page = 1
+  let hasNextPage = true
+
+  while (hasNextPage) {
+    const response = await fetch(ANILIST_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: MOVIES_BY_YEAR_QUERY,
+        variables: { page, yearStart: year * 10000, nextYearStart: (year + 1) * 10000 },
+      }),
+    })
+
+    if (!response.ok) throw new Error('Não foi possível consultar os filmes na AniList.')
+
+    const payload = await response.json()
+    const result = payload.data?.Page
+    movies.push(...(result?.media || []))
+    hasNextPage = Boolean(result?.pageInfo?.hasNextPage)
+    page += 1
+  }
+
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ data: movies, timestamp: Date.now() }))
+  } catch {
+    // Sem cache, mas sem impedir a exibição dos filmes.
+  }
+
+  return movies
 }

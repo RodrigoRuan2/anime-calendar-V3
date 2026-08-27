@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getAniListMoviesByYear } from './aniListApi'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_FUNCTION_URL
 const CACHE_TTL_MS = 5 * 60 * 1000
@@ -109,11 +110,37 @@ export async function getMonthlyMovies(date = new Date()) {
 }
 
 export async function getYearlyMovies(year) {
-  const results = await Promise.all(
-    Array.from({ length: 12 }, (_, month) => getMonthlyMovies(new Date(year, month, 1))),
-  )
+  const [scheduledMonths, announcedMovies] = await Promise.all([
+    Promise.all(Array.from({ length: 12 }, (_, month) => getMonthlyMovies(new Date(year, month, 1)))),
+    getAniListMoviesByYear(year),
+  ])
 
-  return results.map((movies, month) => ({ month, movies }))
+  const months = scheduledMonths.map((movies) => [...movies])
+  const scheduledIds = new Set(months.flat().map((movie) => movie.anilistId))
+
+  announcedMovies.forEach((movie) => {
+    const month = movie.startDate?.month
+    if (!month || scheduledIds.has(movie.id)) return
+
+    months[month - 1].push({
+      title: movie.title.romaji || movie.title.english || movie.title.native,
+      romaji: movie.title.romaji,
+      english: movie.title.english,
+      anilistId: movie.id,
+      route: `anilist-${movie.id}`,
+      episodeDate: new Date(Date.UTC(year, month - 1, movie.startDate.day || 1, 12)).toISOString(),
+      coverImage: movie.coverImage?.large || movie.coverImage?.medium,
+      status: movie.status,
+      releaseDateOnly: true,
+      timeEstimated: false,
+      streams: [],
+    })
+  })
+
+  return months.map((movies, month) => ({
+    month,
+    movies: movies.sort((a, b) => new Date(a.episodeDate) - new Date(b.episodeDate)),
+  }))
 }
 
 function delay(ms) {
