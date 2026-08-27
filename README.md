@@ -25,6 +25,7 @@ Aplicação web para acompanhar os lançamentos semanais de animes e visualizar 
 - [Jikan API v4](https://jikan.moe/) — dados da temporada atual
 - [Supabase Edge Functions](https://supabase.com/docs/guides/functions) — proxy seguro para esconder a API key
 - [GitHub Pages](https://pages.github.com/) — deploy estático
+- [Capacitor](https://capacitorjs.com/) — aplicativo Android nativo a partir do mesmo código React
 
 ---
 
@@ -95,6 +96,29 @@ npm run dev
 npm run build
 npm run deploy
 ```
+
+### Aplicativo Android
+
+A pasta `android/` contém o projeto nativo do AniCal, criado com Capacitor.
+
+1. Instale o [Android Studio](https://developer.android.com/studio) e o JDK 21.
+2. No Android Studio, instale o Android SDK solicitado pelo projeto.
+3. Na raiz deste repositório, sincronize a versão web com o app:
+
+```bash
+npm run android:sync
+```
+
+4. Abra `android/` no Android Studio e execute no emulador ou celular Android.
+
+Para criar um APK de teste pelo terminal:
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+O arquivo será gerado em `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ---
 

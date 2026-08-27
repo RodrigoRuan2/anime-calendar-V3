@@ -50,11 +50,12 @@ function MovieMonth({ month, movies, getStatus, onToggle, onAnimeClick }) {
 export default function Movies({ getStatus, onToggle, onAnimeClick }) {
   const currentYear = new Date().getFullYear()
   const [selectedYear, setSelectedYear] = useState(currentYear)
+  const heroStyle = { '--movie-hero-image': `url("${import.meta.env.BASE_URL}images/movies-hero-v2.png")` }
 
   return (
     <div className="movies-page">
       <header className="movies-page__intro">
-        <div className="movies-page__hero-image" aria-hidden="true" />
+        <div className="movies-page__hero-image" style={heroStyle} aria-hidden="true" />
         <div className="movies-page__intro-content">
         <span className="movies-page__eyebrow">FILMES DE ANIME</span>
         <h1>Lançamentos de {selectedYear}</h1>
