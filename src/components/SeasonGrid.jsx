@@ -24,7 +24,7 @@ export default function SeasonGrid({
   const filtered = animes.filter((anime) => {
     const status = getStatus(anime)
     if (activeFilter === 'watching') return status.watching
-    if (activeFilter === 'continuing') return anime.releaseType === 'continuing'
+    if (activeFilter === 'continuing') return anime.releaseType === 'continuing' || anime.releaseType === 'sequel'
     if (activeFilter === 'new') return anime.releaseType === 'new' || anime.releaseType === 'sequel'
     return true
   })
