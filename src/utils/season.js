@@ -1,10 +1,10 @@
 export const SEASONS = ['winter', 'spring', 'summer', 'fall']
 
 const SEASON_LABELS = {
-  winter: 'Winter',
-  spring: 'Spring',
-  summer: 'Summer',
-  fall: 'Fall',
+  winter: 'Inverno',
+  spring: 'Primavera',
+  summer: 'Verão',
+  fall: 'Outono',
 }
 
 export function getSeasonForDate(date = new Date()) {

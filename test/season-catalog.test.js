@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { getSeasonForDate, getReleaseLabel, shiftSeason } from '../src/utils/season.js'
+import { getSeasonForDate, getReleaseLabel, getSeasonLabel, shiftSeason } from '../src/utils/season.js'
 import { combineSeasonSources } from '../src/services/seasonCatalogApi.js'
 import { getAnimeKey } from '../src/utils/animeKey.js'
 
@@ -31,6 +31,7 @@ test('setembro de 2026 é Summer e a próxima estação é Fall', () => {
   assert.deepEqual(getSeasonForDate(new Date('2026-09-14T12:00:00-03:00')), { year: 2026, season: 'summer' })
   assert.deepEqual(shiftSeason({ year: 2026, season: 'summer' }, 1), fall2026)
   assert.deepEqual(shiftSeason({ year: 2026, season: 'fall' }, 1), { year: 2027, season: 'winter' })
+  assert.equal(getSeasonLabel(fall2026), 'Outono 2026')
 })
 
 test('combina AniList e Jikan sem duplicar, priorizando dados AniList', () => {
