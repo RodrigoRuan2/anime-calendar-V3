@@ -20,7 +20,7 @@ const PLATFORM_COLORS = {
 
 export default function AnimeModal({ anime, status, onToggle, onClose }) {
   const [details, setDetails] = useState(null)
-  const [loadingDetails, setLoadingDetails] = useState(false)
+  const [loadingDetails, setLoadingDetails] = useState(true)
 
   // Fecha com ESC
   useEffect(() => {
@@ -38,7 +38,6 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
     const controller = new AbortController()
     const searchTitle = anime.romaji || anime.english || anime.title
 
-    setLoadingDetails(true)
     getAniListDetails(searchTitle, controller.signal)
       .then(async (data) => {
         if (!data?.description) return data
@@ -81,6 +80,7 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
   const streams    = anime.streams || []
   const isWatching = status?.watching
   const isAiring   = status_str === 'RELEASING' || status_str === 'Currently Airing'
+  const hasScheduleInfo = anime.episodeNumber || anime.localDate || anime.scheduleSources?.length
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -133,6 +133,19 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
                 <>
                   <p className="modal__synopsis-label">Sinopse</p>
                   <p className="modal__synopsis">{synopsis}</p>
+                </>
+              )}
+
+              {hasScheduleInfo && (
+                <>
+                  <div className="modal__divider" />
+                  <section className="modal__schedule-info">
+                    <p className="modal__synopsis-label">Informações de exibição</p>
+                    {anime.episodeNumber && <p><strong>Próximo episódio:</strong> EP {anime.episodeNumber}</p>}
+                    {anime.localDate && <p><strong>Data e horário:</strong> {new Date(anime.airingAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'long', day: '2-digit', month: 'long' })} · {anime.localTime || 'a confirmar'} BRT</p>}
+                    {anime.platform && <p><strong>Plataforma:</strong> {anime.platform}</p>}
+                    {anime.scheduleSources?.length > 0 && <p><strong>Fontes:</strong> {anime.scheduleSources.map((source) => source.name).join(' + ')}</p>}
+                  </section>
                 </>
               )}
 

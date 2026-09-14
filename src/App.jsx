@@ -19,12 +19,12 @@ export default function App() {
   const [activeTab, setActiveTab]       = useState('calendar')
   const [seasonFilter, setSeasonFilter] = useState('all')
   const [sidebarOpen, setSidebarOpen]   = useState(false)
-  const [isNextWeek, setIsNextWeek]     = useState(false)
+  const [weekOffset, setWeekOffset]     = useState(0)
   const [selectedAnime, setSelectedAnime] = useState(null)
   const closeModal = useCallback(() => setSelectedAnime(null), [])
 
   const { toggleStatus, getStatus, statusMap } = useAnimeStatus()
-  const { schedule, loading: scheduleLoading, error: scheduleError } = useAnimeSchedule(isNextWeek ? 1 : 0)
+  const { schedule, items: scheduleItems, range: scheduleRange, loading: scheduleLoading, error: scheduleError, partial: schedulePartial, updatedAt: scheduleUpdatedAt, now: scheduleNow, refresh: refreshSchedule } = useAnimeSchedule(weekOffset)
 
   const today = new Date()
   const formattedDate = today.toLocaleDateString('pt-BR', {
@@ -108,13 +108,18 @@ export default function App() {
           {activeTab === 'calendar' && (
             <Calendar
               schedule={schedule}
+              items={scheduleItems}
+              range={scheduleRange}
               loading={scheduleLoading}
               error={scheduleError}
+              partial={schedulePartial}
+              updatedAt={scheduleUpdatedAt}
+              now={scheduleNow}
+              refresh={refreshSchedule}
               onToggle={toggleStatus}
               getStatus={getStatus}
-              today={today.getDay()}
-              isNextWeek={isNextWeek}
-              setIsNextWeek={setIsNextWeek}
+              weekOffset={weekOffset}
+              setWeekOffset={setWeekOffset}
               onAnimeClick={setSelectedAnime}
             />
           )}

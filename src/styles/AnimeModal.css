@@ -250,6 +250,10 @@
   color: #4ade80;
 }
 
+.modal__schedule-info { color: var(--text-muted); font-size: .76rem; line-height: 1.65; }
+.modal__schedule-info p + p { margin-top: .3rem; }
+.modal__schedule-info strong { color: var(--text-primary); }
+
 .modal__action-btn.active-favorite {
   background: rgba(212, 160, 23, 0.1);
   border-color: rgba(212, 160, 23, 0.4);
