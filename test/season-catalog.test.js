@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { getSeasonForDate, getReleaseLabel, getSeasonLabel, shiftSeason } from '../src/utils/season.js'
 import { combineSeasonSources } from '../src/services/seasonCatalogApi.js'
 import { getAnimeKey } from '../src/utils/animeKey.js'
+import { cleanSynopsis, getSynopsisPreview } from '../src/services/translationApi.js'
 
 const fall2026 = { year: 2026, season: 'fall' }
 
@@ -65,4 +66,9 @@ test('exclui música e filme, mas mantém ONA; identifica continuação', () => 
 
 test('chave de status mantém compatibilidade com MAL normalizado', () => {
   assert.equal(getAnimeKey({ malId: 123, anilistId: 456 }), 123)
+})
+
+test('limpa HTML antes de traduzir a sinopse exibida no card', () => {
+  assert.equal(cleanSynopsis('The <i>second</i><br>part &amp; more.'), 'The second part & more.')
+  assert.equal(getSynopsisPreview('A'.repeat(440)).endsWith('…'), true)
 })

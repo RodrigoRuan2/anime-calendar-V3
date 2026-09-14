@@ -1,6 +1,26 @@
-const SUPABASE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_FUNCTION_URL
+const SUPABASE_FUNCTION_URL = import.meta.env?.VITE_SUPABASE_FUNCTION_URL
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const MAX_CHUNK_LENGTH = 450
+
+export function cleanSynopsis(text) {
+  return String(text || '')
+    .replace(/<br\s*\/?>(\r?\n)?/gi, ' ')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export function getSynopsisPreview(text, maxLength = 430) {
+  const cleaned = cleanSynopsis(text)
+  if (cleaned.length <= maxLength) return cleaned
+
+  const boundary = Math.max(cleaned.lastIndexOf('. ', maxLength), cleaned.lastIndexOf('! ', maxLength), cleaned.lastIndexOf('? ', maxLength))
+  return `${cleaned.slice(0, boundary > 160 ? boundary + 1 : maxLength).trim()}…`
+}
 
 function cacheKey(text) {
   return `anical_translation_${text.slice(0, 120)}`
@@ -59,9 +79,10 @@ async function translateWithMyMemory(text, signal) {
 }
 
 export async function translateSynopsis(text, signal) {
-  if (!text) return text
+  const cleanedText = cleanSynopsis(text)
+  if (!cleanedText) return cleanedText
 
-  const cached = getCachedTranslation(text)
+  const cached = getCachedTranslation(cleanedText)
   if (cached) return cached
 
   let translation
@@ -72,7 +93,7 @@ export async function translateSynopsis(text, signal) {
         method: 'POST',
         signal,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text: cleanedText }),
       })
 
       if (response.ok) {
@@ -84,8 +105,8 @@ export async function translateSynopsis(text, signal) {
     }
   }
 
-  if (!translation) translation = await translateWithMyMemory(text, signal)
+  if (!translation) translation = await translateWithMyMemory(cleanedText, signal)
   if (!translation) throw new Error('A tradução retornou vazia.')
-  cacheTranslation(text, translation)
+  cacheTranslation(cleanedText, translation)
   return translation
 }
