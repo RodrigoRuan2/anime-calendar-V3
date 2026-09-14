@@ -1,12 +1,15 @@
+import { getReleaseLabel } from '../utils/season'
 import '../styles/SeasonCard.css'
 
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
 const FALLBACK   = 'https://placehold.co/200x280?text=?'
 
-export default function SeasonCard({ anime, status, onToggle, onClick }) {
-  const imageUrl = anime.imageVersionRoute
+const TYPE_LABEL = { new: 'Novo', sequel: 'Sequência', continuing: 'Continuação' }
+
+export default function SeasonCard({ anime, targetSeason, status, onToggle, onClick }) {
+  const imageUrl = anime.coverImage || (anime.imageVersionRoute
     ? `${IMAGE_BASE}${anime.imageVersionRoute}`
-    : null
+    : null) || anime.images?.jpg?.image_url
 
   return (
     <div
@@ -18,7 +21,7 @@ export default function SeasonCard({ anime, status, onToggle, onClick }) {
       {/* Poster */}
       <div className="season-card__poster">
         <img
-          src={imageUrl || anime.images?.jpg?.image_url || FALLBACK}
+          src={imageUrl || FALLBACK}
           alt={anime.title}
           loading="lazy"
           onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK }}
@@ -37,6 +40,7 @@ export default function SeasonCard({ anime, status, onToggle, onClick }) {
 
         {/* Badge de status visível no card */}
         <div className="season-card__badges">
+          {anime.releaseType && <span className="badge badge--type">{TYPE_LABEL[anime.releaseType]}</span>}
           {status.watching && <span className="badge badge--watching">▶</span>}
         </div>
       </div>
@@ -44,6 +48,7 @@ export default function SeasonCard({ anime, status, onToggle, onClick }) {
       {/* Título */}
       <div className="season-card__info">
         <p className="season-card__title">{anime.title}</p>
+        <p className="season-card__release">{getReleaseLabel(anime, targetSeason)}</p>
       </div>
     </div>
   )

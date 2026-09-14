@@ -28,6 +28,16 @@
   color: var(--text-primary, rgba(255, 255, 255, 0.95));
 }
 
+.season-title span {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.season-navigation {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .season-toggle-btn {
   display: flex;
   align-items: center;
