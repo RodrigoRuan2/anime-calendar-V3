@@ -122,13 +122,14 @@
 /* Grid */
 .season-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
+  grid-template-columns: minmax(0, 860px);
+  justify-content: center;
+  gap: 1.1rem;
 }
 
 @media (max-width: 600px) {
   .season-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
