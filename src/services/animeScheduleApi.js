@@ -62,10 +62,11 @@ function normalizeTsuzukiEpisode(episode) {
 }
 
 function normalizeAnimeScheduleEpisode(anime) {
+  const routeAniListId = String(anime.route || '').match(/^anilist-(\d+)$/)?.[1]
   return {
     id: anime.route || anime.anilistId || anime.mal_id,
-    anilistId: anime.anilistId || null,
-    malId: anime.malId || anime.mal_id || null,
+    anilistId: anime.anilistId || anime.anilist_id || routeAniListId || null,
+    malId: anime.malId || anime.mal_id || anime.mal_id || null,
     title: anime.title,
     titleEnglish: anime.english || null,
     titleRomaji: anime.romaji || anime.title,
@@ -164,7 +165,7 @@ export async function getWeeklyTimetable(weekOffset = 0) {
 
 export async function getAggregatedWeeklySchedule({ weekOffset = 0, timezone = SCHEDULE_TIMEZONE, forceRefresh = false } = {}) {
   const range = getWeekRange(weekOffset, timezone)
-  const cacheKey = `anical:weekly:v3:${range.startDate}:${timezone}`
+  const cacheKey = `anical:weekly:v4:${range.startDate}:${timezone}`
   if (!forceRefresh) {
     try {
       const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')

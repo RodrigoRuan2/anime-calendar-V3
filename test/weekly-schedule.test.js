@@ -22,6 +22,18 @@ test('merge deduplica fontes e prioriza AnimeSchedule', () => {
   assert.equal(result[0].streams[0].name, 'Crunchyroll')
 })
 
+test('AniList conecta títulos romaji e inglês entregues por fontes diferentes', () => {
+  const result = mergeScheduleSources([[
+    { ...base, anilistId: null, title: 'Toumei na Yoru', titleRomaji: 'Toumei na Yoru', source: 'animeschedule', airingAt: '2026-09-14T21:00:00Z' },
+  ], [
+    { ...base, anilistId: null, title: 'Love Unseen', titleEnglish: 'Love Unseen', source: 'tsuzuki', airingAt: '2026-09-14T21:00:00Z' },
+  ], [
+    { ...base, anilistId: 99, title: 'Toumei na Yoru', titleRomaji: 'Toumei na Yoru', titleEnglish: 'Love Unseen', source: 'anilist', airingAt: '2026-09-14T21:00:00Z' },
+  ]])
+  assert.equal(result.length, 1)
+  assert.equal(result[0].anilistId, 99)
+})
+
 test('marca horários divergentes e mantém fontes para transparência', () => {
   const result = mergeScheduleSources([[{ ...base, source: 'animeschedule', airingAt: '2026-09-14T18:00:00Z' }], [{ ...base, source: 'anilist', airingAt: '2026-09-14T19:00:00Z' }]])
   assert.equal(result[0].timingConfidence, 'conflicting')

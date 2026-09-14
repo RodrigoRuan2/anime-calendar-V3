@@ -41,6 +41,17 @@ export function scheduleIdentity(item) {
   return item.anilistId ? `anilist:${item.anilistId}` : item.malId ? `mal:${item.malId}` : `title:${normalizeTitle(item.title)}:ep:${item.episodeNumber || ''}`
 }
 
+function scheduleIdentityKeys(item) {
+  const episode = item.episodeNumber || ''
+  return [
+    item.anilistId ? `anilist:${item.anilistId}` : null,
+    item.malId ? `mal:${item.malId}` : null,
+    ...[item.title, item.titleEnglish, item.titleRomaji, item.titleNative]
+      .filter(Boolean)
+      .map((title) => `title:${normalizeTitle(title)}:ep:${episode}`),
+  ].filter(Boolean)
+}
+
 export function scheduleConfidence(items) {
   const timed = items.filter((item) => item.airingAt)
   if (!timed.length) return 'estimated'
@@ -57,20 +68,36 @@ export function scheduleConfidence(items) {
 }
 
 export function mergeScheduleSources(sourceLists, timezone = SCHEDULE_TIMEZONE) {
-  const groups = new Map()
+  const groups = []
+  const index = new Map()
   sourceLists.flat().forEach((item) => {
-    const key = scheduleIdentity(item)
-    groups.set(key, [...(groups.get(key) || []), item])
+    const keys = scheduleIdentityKeys(item)
+    const matching = [...new Set(keys.map((key) => index.get(key)).filter((value) => value !== undefined))]
+    const groupIndex = matching[0] ?? groups.length
+    if (!groups[groupIndex]) groups[groupIndex] = []
+    groups[groupIndex].push(item)
+
+    // A AniList normalmente traz romaji + inglês. Ela funciona como ponte
+    // entre fontes que entregam apenas um desses títulos e une os grupos.
+    matching.slice(1).forEach((otherIndex) => {
+      if (otherIndex === groupIndex || !groups[otherIndex]) return
+      groups[groupIndex].push(...groups[otherIndex])
+      groups[otherIndex] = null
+      index.forEach((value, key) => { if (value === otherIndex) index.set(key, groupIndex) })
+    })
+    keys.forEach((key) => index.set(key, groupIndex))
   })
-  return [...groups.values()].map((items) => {
+  return groups.filter(Boolean).map((items) => {
     const ordered = [...items].sort((a, b) => ['animeschedule', 'tsuzuki', 'anilist'].indexOf(a.source) - ['animeschedule', 'tsuzuki', 'anilist'].indexOf(b.source))
     const selected = ordered.find((item) => item.airingAt) || ordered[0]
     const streams = ordered.find((item) => item.streams?.length)?.streams || []
     const platform = ordered.find((item) => item.platform)?.platform || null
     const confidence = scheduleConfidence(items)
     const fields = getLocalScheduleFields(selected.airingAt, timezone)
+    const canonicalAniListId = selected.anilistId || ordered.find((item) => item.anilistId)?.anilistId || null
+    const canonicalMalId = selected.malId || ordered.find((item) => item.malId)?.malId || null
     return {
-      ...selected, ...fields, id: scheduleIdentity(selected), streams, platform,
+      ...selected, anilistId: canonicalAniListId, malId: canonicalMalId, ...fields, id: canonicalAniListId ? `anilist:${canonicalAniListId}` : canonicalMalId ? `mal:${canonicalMalId}` : scheduleIdentity(selected), streams, platform,
       timingConfidence: confidence,
       scheduleSources: items.map((item) => ({ name: item.source, airingAt: item.airingAt, estimated: Boolean(item.timeEstimated) })),
       status: selected.status || 'RELEASING',
