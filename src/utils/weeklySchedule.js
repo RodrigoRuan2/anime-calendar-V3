@@ -87,7 +87,7 @@ export function mergeScheduleSources(sourceLists, timezone = SCHEDULE_TIMEZONE) 
     })
     keys.forEach((key) => index.set(key, groupIndex))
   })
-  return groups.filter(Boolean).map((items) => {
+  const merged = groups.filter(Boolean).map((items) => {
     const ordered = [...items].sort((a, b) => ['animeschedule', 'tsuzuki', 'anilist'].indexOf(a.source) - ['animeschedule', 'tsuzuki', 'anilist'].indexOf(b.source))
     const selected = ordered.find((item) => item.airingAt) || ordered[0]
     const streams = ordered.find((item) => item.streams?.length)?.streams || []
@@ -102,7 +102,27 @@ export function mergeScheduleSources(sourceLists, timezone = SCHEDULE_TIMEZONE) 
       scheduleSources: items.map((item) => ({ name: item.source, airingAt: item.airingAt, estimated: Boolean(item.timeEstimated) })),
       status: selected.status || 'RELEASING',
     }
-  }).sort((a, b) => (a.airingAt ? new Date(a.airingAt).getTime() : Number.MAX_SAFE_INTEGER) - (b.airingAt ? new Date(b.airingAt).getTime() : Number.MAX_SAFE_INTEGER))
+  })
+
+  // Última barreira: fontes podem publicar o mesmo episódio com aliases que
+  // ainda não estavam associados. Um card só pode ocupar uma vez o mesmo
+  // AniList/MAL ou a mesma combinação de pôster + episódio + horário.
+  const unique = new Map()
+  for (const item of merged) {
+    const imageId = String(item.coverImage || '').match(/bx(\d+)-/i)?.[1]
+    const timeBucket = item.airingAt ? Math.round(new Date(item.airingAt).getTime() / (10 * 60 * 1000)) : 'unknown'
+    const key = item.anilistId ? `anilist:${item.anilistId}:ep:${item.episodeNumber || ''}`
+      : item.malId ? `mal:${item.malId}:ep:${item.episodeNumber || ''}`
+        : imageId ? `cover:${imageId}:ep:${item.episodeNumber || ''}:at:${timeBucket}`
+          : null
+    if (!key) {
+      unique.set(`fallback:${item.id}`, item)
+      continue
+    }
+    const previous = unique.get(key)
+    if (!previous || ['animeschedule', 'tsuzuki', 'anilist'].indexOf(item.source) < ['animeschedule', 'tsuzuki', 'anilist'].indexOf(previous.source)) unique.set(key, item)
+  }
+  return [...unique.values()].sort((a, b) => (a.airingAt ? new Date(a.airingAt).getTime() : Number.MAX_SAFE_INTEGER) - (b.airingAt ? new Date(b.airingAt).getTime() : Number.MAX_SAFE_INTEGER))
 }
 
 export function groupScheduleByDay(items) {

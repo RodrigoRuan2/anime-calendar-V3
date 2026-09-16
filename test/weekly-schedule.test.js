@@ -46,6 +46,11 @@ test('união por aliases conserva a imagem da fonte prioritária', () => {
   assert.equal(result[0].coverImage, 'https://img.example/high.jpg')
 })
 
+test('barreira final não deixa o mesmo AniList e episódio virar dois cards', () => {
+  const result = mergeScheduleSources([[{ ...base, anilistId: 44, source: 'tsuzuki', airingAt: '2026-09-14T21:00:00Z' }], [{ ...base, anilistId: 44, source: 'anilist', airingAt: '2026-09-14T21:00:00Z' }]])
+  assert.equal(result.length, 1)
+})
+
 test('marca horários divergentes e mantém fontes para transparência', () => {
   const result = mergeScheduleSources([[{ ...base, source: 'animeschedule', airingAt: '2026-09-14T18:00:00Z' }], [{ ...base, source: 'anilist', airingAt: '2026-09-14T19:00:00Z' }]])
   assert.equal(result[0].timingConfidence, 'conflicting')
