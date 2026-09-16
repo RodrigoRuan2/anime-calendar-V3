@@ -34,6 +34,18 @@ test('AniList conecta títulos romaji e inglês entregues por fontes diferentes'
   assert.equal(result[0].anilistId, 99)
 })
 
+test('união por aliases conserva a imagem da fonte prioritária', () => {
+  const result = mergeScheduleSources([[
+    { ...base, title: 'Nome Romaji', titleRomaji: 'Nome Romaji', coverImage: 'https://img.example/high.jpg', source: 'animeschedule', airingAt: '2026-09-14T21:00:00Z' },
+  ], [
+    { ...base, title: 'English Name', titleEnglish: 'English Name', coverImage: 'https://img.example/low.jpg', source: 'tsuzuki', airingAt: '2026-09-14T21:00:00Z' },
+  ], [
+    { ...base, anilistId: 3, title: 'Nome Romaji', titleRomaji: 'Nome Romaji', titleEnglish: 'English Name', source: 'anilist', airingAt: '2026-09-14T21:00:00Z' },
+  ]])
+  assert.equal(result.length, 1)
+  assert.equal(result[0].coverImage, 'https://img.example/high.jpg')
+})
+
 test('marca horários divergentes e mantém fontes para transparência', () => {
   const result = mergeScheduleSources([[{ ...base, source: 'animeschedule', airingAt: '2026-09-14T18:00:00Z' }], [{ ...base, source: 'anilist', airingAt: '2026-09-14T19:00:00Z' }]])
   assert.equal(result[0].timingConfidence, 'conflicting')

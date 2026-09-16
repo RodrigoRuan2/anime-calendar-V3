@@ -48,7 +48,9 @@ function normalizeTsuzukiEpisode(episode) {
     episodeNumber: episode.episode,
     airingStatus: 'unaired',
     status: 'Ongoing',
-    coverImage: episode.coverImage,
+    // Tsuzuki usa o thumbnail pequeno da AniList. A versão medium mantém o
+    // mesmo pôster, mas evita cards borrados quando esta for a única fonte.
+    coverImage: episode.coverImage?.replace('/cover/small/', '/cover/medium/') || null,
     // A Tsuzuki informa a plataforma, mas não disponibiliza uma URL oficial
     // do streaming. Não criamos links inexistentes no card.
     streams: [],
@@ -165,7 +167,7 @@ export async function getWeeklyTimetable(weekOffset = 0) {
 
 export async function getAggregatedWeeklySchedule({ weekOffset = 0, timezone = SCHEDULE_TIMEZONE, forceRefresh = false } = {}) {
   const range = getWeekRange(weekOffset, timezone)
-  const cacheKey = `anical:weekly:v4:${range.startDate}:${timezone}`
+  const cacheKey = `anical:weekly:v5:${range.startDate}:${timezone}`
   if (!forceRefresh) {
     try {
       const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')
