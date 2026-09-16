@@ -167,7 +167,7 @@ export async function getWeeklyTimetable(weekOffset = 0) {
 
 export async function getAggregatedWeeklySchedule({ weekOffset = 0, timezone = SCHEDULE_TIMEZONE, forceRefresh = false } = {}) {
   const range = getWeekRange(weekOffset, timezone)
-  const cacheKey = `anical:weekly:v6:${range.startDate}:${timezone}`
+  const cacheKey = `anical:weekly:v7:${range.startDate}:${timezone}`
   if (!forceRefresh) {
     try {
       const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')

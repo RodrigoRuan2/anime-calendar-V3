@@ -48,7 +48,12 @@ function scheduleIdentityKeys(item) {
     item.malId ? `mal:${item.malId}` : null,
     ...[item.title, item.titleEnglish, item.titleRomaji, item.titleNative]
       .filter(Boolean)
-      .map((title) => `title:${normalizeTitle(title)}:ep:${episode}`),
+      .flatMap((title) => {
+        const normalized = normalizeTitle(title)
+        // "Mukashi Banashi" e "Mukashibanashi" são o mesmo título em
+        // fontes diferentes; a chave compacta cobre esse caso específico.
+        return [`title:${normalized}:ep:${episode}`, `titlecompact:${normalized.replaceAll(' ', '')}:ep:${episode}`]
+      }),
   ].filter(Boolean)
 }
 

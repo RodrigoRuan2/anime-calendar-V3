@@ -51,6 +51,12 @@ test('barreira final não deixa o mesmo AniList e episódio virar dois cards', (
   assert.equal(result.length, 1)
 })
 
+test('deduplica títulos que divergem apenas por separação de palavras', () => {
+  const result = mergeScheduleSources([[{ ...base, anilistId: null, title: 'Ugoku! Neko Mukashibanashi', source: 'animeschedule', airingAt: '2026-09-16T11:01:00Z' }], [{ ...base, anilistId: 188529, title: 'Ugoku! Neko Mukashi Banashi', titleRomaji: 'Ugoku! Neko Mukashi Banashi', source: 'anilist', airingAt: '2026-09-16T11:00:00Z' }]])
+  assert.equal(result.length, 1)
+  assert.equal(result[0].anilistId, 188529)
+})
+
 test('marca horários divergentes e mantém fontes para transparência', () => {
   const result = mergeScheduleSources([[{ ...base, source: 'animeschedule', airingAt: '2026-09-14T18:00:00Z' }], [{ ...base, source: 'anilist', airingAt: '2026-09-14T19:00:00Z' }]])
   assert.equal(result[0].timingConfidence, 'conflicting')
