@@ -25,15 +25,7 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
-      - name: Validar configuração de produção
-        env:
-          VITE_SUPABASE_FUNCTION_URL: ${{ secrets.VITE_SUPABASE_FUNCTION_URL }}
-        run: |
-          test -n "$VITE_SUPABASE_FUNCTION_URL"
-
       - name: Testar e gerar site
-        env:
-          VITE_SUPABASE_FUNCTION_URL: ${{ secrets.VITE_SUPABASE_FUNCTION_URL }}
         run: |
           npm test
           npm run build
@@ -41,5 +33,4 @@ jobs:
       - name: Publicar no GitHub Pages
         env:
           GH_TOKEN: ${{ github.token }}
-          VITE_SUPABASE_FUNCTION_URL: ${{ secrets.VITE_SUPABASE_FUNCTION_URL }}
         run: npm run deploy
