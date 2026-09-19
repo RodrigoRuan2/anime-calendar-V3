@@ -156,7 +156,7 @@ O projeto inclui a migration `supabase/migrations/20260919120000_add_private_lib
 Antes de ativar esta funcionalidade em produção:
 
 1. No SQL Editor do Supabase, execute a migration (ela cria as tabelas privadas, índices, triggers e políticas RLS).
-2. Em **Authentication → Providers**, mantenha o provedor **Email** ativo. O AniCal usa cadastro próprio com nome de usuário, e-mail e senha; não precisa configurar Google.
+2. Em **Authentication → Providers**, mantenha o provedor **Email** ativo e a opção **Confirm email** desativada. O AniCal usa cadastro próprio com nome de usuário e senha; o identificador técnico exigido pelo Supabase é criado internamente e não pede nem exibe e-mail ao usuário.
 3. Em **Authentication → URL Configuration**, cadastre:
    - `https://RodrigoRuan2.github.io/anime-calendar-V3/`
    - `http://localhost:5173/`
