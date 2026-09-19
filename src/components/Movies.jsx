@@ -8,7 +8,7 @@ const MONTHS = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
-function MovieMonth({ month, movies, getStatus, onToggle, onAnimeClick }) {
+function MovieMonth({ month, movies, getStatus, onToggle, onFavorite, onAnimeClick }) {
   const now = new Date()
   const released = movies.filter((movie) => new Date(movie.episodeDate) < now)
   const upcoming = movies.length - released.length
@@ -36,6 +36,7 @@ function MovieMonth({ month, movies, getStatus, onToggle, onAnimeClick }) {
                 anime={movie}
                 status={getStatus(movie)}
                 onToggle={onToggle}
+                onFavorite={onFavorite}
                 onClick={onAnimeClick}
                 aired={new Date(movie.episodeDate) < now}
               />
@@ -47,7 +48,7 @@ function MovieMonth({ month, movies, getStatus, onToggle, onAnimeClick }) {
   )
 }
 
-export default function Movies({ getStatus, onToggle, onAnimeClick }) {
+export default function Movies({ getStatus, onToggle, onFavorite, onAnimeClick }) {
   const currentYear = new Date().getFullYear()
   const [selectedYear, setSelectedYear] = useState(currentYear)
   const heroStyle = { '--movie-hero-image': `url("${import.meta.env.BASE_URL}images/movies-hero-v2.png")` }
@@ -82,13 +83,14 @@ export default function Movies({ getStatus, onToggle, onAnimeClick }) {
         year={selectedYear}
         getStatus={getStatus}
         onToggle={onToggle}
+        onFavorite={onFavorite}
         onAnimeClick={onAnimeClick}
       />
     </div>
   )
 }
 
-function MovieYear({ year, getStatus, onToggle, onAnimeClick }) {
+function MovieYear({ year, getStatus, onToggle, onFavorite, onAnimeClick }) {
   const { months, loading, error } = useMonthlyMovies(year)
 
   if (loading) {
@@ -108,6 +110,7 @@ function MovieYear({ year, getStatus, onToggle, onAnimeClick }) {
           movies={movies}
           getStatus={getStatus}
           onToggle={onToggle}
+          onFavorite={onFavorite}
           onAnimeClick={onAnimeClick}
         />
       ))}

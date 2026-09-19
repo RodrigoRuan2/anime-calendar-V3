@@ -7,12 +7,12 @@
 .weekly-header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; padding: .35rem .5rem; }
 .weekly-header__eyebrow { margin-bottom: .2rem; color: var(--accent); font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .weekly-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.85rem; font-weight: 400; letter-spacing: .07em; }
-.weekly-navigation { display: flex; align-items: center; gap: .35rem; }
-.weekly-range { margin-right: .3rem; color: var(--text-primary); font-size: .78rem; font-weight: 700; white-space: nowrap; }
+.weekly-navigation { display: flex; align-items: center; gap: .35rem; padding: .26rem; border: 1px solid var(--border); border-radius: 12px; background: rgba(19,19,31,.58); }
+.weekly-range { padding: 0 .35rem; color: var(--text-primary); font-size: .78rem; font-weight: 800; white-space: nowrap; }
 .weekly-navigation button, .weekly-filters button, .weekly-filters select, .weekly-filters input { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: .74rem; padding: .45rem .62rem; }
 .weekly-navigation button, .weekly-filters button { cursor: pointer; }
 .weekly-navigation button:hover, .weekly-filters button:hover, .weekly-filters button.active { border-color: var(--accent); color: #fff; }
-.weekly-today { background: rgba(192,57,43,.14) !important; }
+.weekly-today { background: rgba(200,144,26,.12) !important; border-color: rgba(200,144,26,.3) !important; color: var(--accent-gold) !important; }
 .weekly-notice { border-left: 3px solid var(--accent-gold); color: #dfbd76; font-size: .73rem; padding: .45rem .65rem; }
 .weekly-updated { color: var(--text-muted); font-size: .65rem; margin-top: -.8rem; }
 .weekly-filters { display: flex; align-items: center; gap: .45rem; overflow-x: auto; padding-bottom: .15rem; }

@@ -18,7 +18,7 @@ const PLATFORM_COLORS = {
   bilibili:    '#00A1D6',
 }
 
-export default function AnimeModal({ anime, status, onToggle, onClose }) {
+export default function AnimeModal({ anime, status, onToggle, onFavorite, onToggleEpisode, onClose }) {
   const [details, setDetails] = useState(null)
   const [loadingDetails, setLoadingDetails] = useState(true)
 
@@ -81,6 +81,9 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
   const isWatching = status?.watching
   const isAiring   = status_str === 'RELEASING' || status_str === 'Currently Airing'
   const hasScheduleInfo = anime.episodeNumber || anime.localDate || anime.scheduleSources?.length
+  const watchedEpisodes = status?.watchedEpisodes || []
+  const episodeCount = episodes || anime.episodes || 0
+  const episodeButtons = episodeCount > 0 && episodeCount <= 150 ? Array.from({ length: episodeCount }, (_, index) => index + 1) : []
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -178,7 +181,16 @@ export default function AnimeModal({ anime, status, onToggle, onClose }) {
                 >
                   {isWatching ? '▶ Assistindo' : '▶ Assistir'}
                 </button>
+                <button className={`modal__action-btn ${status?.favorite ? 'active-favorite' : ''}`} onClick={() => onFavorite?.(anime)}>
+                  {status?.favorite ? '♥ Favorito' : '♡ Favoritar'}
+                </button>
               </div>
+
+              <div className="modal__divider" />
+              <section className="modal__progress">
+                <div className="modal__progress-heading"><p className="modal__synopsis-label">Progresso por episódio</p><span>{watchedEpisodes.length}{episodeCount ? ` de ${episodeCount}` : ''} assistidos</span></div>
+                {episodeButtons.length > 0 ? <div className="modal__episode-grid">{episodeButtons.map((episode) => <button key={episode} className={watchedEpisodes.includes(episode) ? 'watched' : ''} onClick={() => onToggleEpisode?.(anime, episode)} aria-pressed={watchedEpisodes.includes(episode)}>EP {episode}</button>)}</div> : <p className="modal__progress-empty">Os episódios serão liberados para marcar quando a quantidade total estiver disponível.</p>}
+              </section>
             </>
           )}
         </div>

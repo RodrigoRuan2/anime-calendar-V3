@@ -7,7 +7,7 @@ const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
 const FALLBACK = 'https://placehold.co/300x420?text=?'
 const TYPE_LABEL = { new: 'Novo', sequel: 'Sequência', continuing: 'Continuação' }
 
-export default function SeasonCard({ anime, targetSeason, status, onToggle, onClick }) {
+export default function SeasonCard({ anime, targetSeason, status, onToggle, onFavorite, onClick }) {
   const imageUrl = anime.coverImage || (anime.imageVersionRoute ? `${IMAGE_BASE}${anime.imageVersionRoute}` : null) || anime.images?.jpg?.image_url
   const cardRef = useRef(null)
   const [visible, setVisible] = useState(false)
@@ -45,6 +45,7 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onCl
           </button>
         </div>
         <div className="season-card__badges">
+          <button className={`season-card__favorite ${status.favorite ? 'active' : ''}`} onClick={(event) => { event.stopPropagation(); onFavorite?.(anime) }} aria-label="Favoritar">{status.favorite ? '♥' : '♡'}</button>
           {anime.releaseType && <span className="badge badge--type">{TYPE_LABEL[anime.releaseType]}</span>}
         </div>
       </div>

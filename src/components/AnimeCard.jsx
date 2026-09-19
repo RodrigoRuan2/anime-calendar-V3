@@ -3,13 +3,14 @@ import '../styles/AnimeCard.css'
 const FALLBACK = 'https://placehold.co/300x420?text=?'
 const CONFIDENCE = { confirmed: ['● Confirmado', 'anime-card__confidence--confirmed'], corroborated: ['● Confirmado por fontes', 'anime-card__confidence--corroborated'], estimated: ['◷ Estimado', 'anime-card__confidence--estimated'], conflicting: ['⚠ Horário divergente', 'anime-card__confidence--conflicting'] }
 
-export default function AnimeCard({ anime, status, onToggle, onClick, temporalStatus }) {
+export default function AnimeCard({ anime, status, onToggle, onFavorite, onClick, temporalStatus }) {
   const time = anime.localTime ? `${anime.timingConfidence === 'estimated' ? '~' : ''}${anime.localTime}` : 'A confirmar'
   const confidence = CONFIDENCE[anime.timingConfidence] || CONFIDENCE.estimated
   const image = anime.coverImage || FALLBACK
   const sourceLabel = anime.platform || anime.streams?.[0]?.name || 'Streaming a definir'
   return <article className={`anime-card ${status?.watching ? 'anime-card--watching' : ''}`} onClick={() => onClick?.(anime)}>
     <div className="anime-card__poster"><img src={image} alt={anime.title} loading="lazy" onError={(event) => { event.currentTarget.src = FALLBACK }} />
+      <button className={`anime-card__favorite ${status?.favorite ? 'active' : ''}`} onClick={(event) => { event.stopPropagation(); onFavorite?.(anime) }} aria-label={status?.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>{status?.favorite ? '♥' : '♡'}</button>
       <div className="anime-card__poster-meta"><span>EP {anime.episodeNumber || '—'}</span><strong>{time}</strong></div>
       {anime.scheduleChanged && <span className="anime-card__changed">{anime.dateChanged ? 'DATA ALTERADA' : 'HORÁRIO ALTERADO'}</span>}
     </div>

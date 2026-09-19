@@ -17,7 +17,7 @@ function labelForRange(range) {
   return `${date(start)} – ${date(end)}`
 }
 
-export default function Calendar({ schedule, items = [], loading, error, partial, updatedAt, now, refresh, onToggle, getStatus, weekOffset, setWeekOffset, onAnimeClick, range }) {
+export default function Calendar({ schedule, items = [], loading, error, partial, updatedAt, now, refresh, onToggle, onFavorite, getStatus, weekOffset, setWeekOffset, onAnimeClick, range }) {
   const todayKey = getLocalScheduleFields(now, SCHEDULE_TIMEZONE).weekday
   const [selectedDay, setSelectedDay] = useState(todayKey)
   const [filter, setFilter] = useState('all')
@@ -50,11 +50,10 @@ export default function Calendar({ schedule, items = [], loading, error, partial
       <header className="weekly-header">
         <div><p className="weekly-header__eyebrow">Calendário</p><h2>Seus lançamentos da semana</h2></div>
         <div className="weekly-navigation">
-          <span className="weekly-range">{labelForRange(range)}</span>
           <button onClick={() => setWeekOffset((value) => value - 1)} aria-label="Semana anterior">←</button>
+          <span className="weekly-range">{labelForRange(range)}</span>
           <button className="weekly-today" onClick={() => { setWeekOffset(0); setSelectedDay(todayKey) }}>Hoje</button>
           <button onClick={() => setWeekOffset((value) => value + 1)} aria-label="Próxima semana">→</button>
-          <button onClick={refresh} aria-label="Atualizar calendário">↻</button>
         </div>
       </header>
       {partial && <p className="weekly-notice">Algumas informações podem estar indisponíveis. Exibindo fontes disponíveis.</p>}
@@ -77,7 +76,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
       </div>
 
       <div className="day-view__header"><h3 className="day-view__name">{selected.label} {weekOffset === 0 && selectedDay === todayKey && <span className="day-view__today-tag">Hoje</span>}</h3><span className="day-view__date">{visibleItems.length} {visibleItems.length === 1 ? 'episódio' : 'episódios'}</span></div>
-      {visibleItems.length === 0 ? <p className="day-view__empty">Não há episódios conhecidos para este dia.</p> : <div className="day-grid">{visibleItems.map((anime) => <AnimeCard key={anime.id} anime={anime} status={getStatus(anime)} onToggle={onToggle} onClick={onAnimeClick} temporalStatus={getTemporalStatus(anime, now)} />)}</div>}
+      {visibleItems.length === 0 ? <p className="day-view__empty">Não há episódios conhecidos para este dia.</p> : <div className="day-grid">{visibleItems.map((anime) => <AnimeCard key={anime.id} anime={anime} status={getStatus(anime)} onToggle={onToggle} onFavorite={onFavorite} onClick={onAnimeClick} temporalStatus={getTemporalStatus(anime, now)} />)}</div>}
     </section>
   )
 }

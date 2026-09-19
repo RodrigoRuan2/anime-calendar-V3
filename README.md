@@ -10,8 +10,9 @@ Aplicação web para acompanhar os lançamentos semanais de animes e visualizar 
 
 - 📅 **Calendário semanal** — visualize os animes organizados por dia da semana com horário de lançamento
 - 🎌 **Grade da temporada** — listagem completa dos animes em exibição na temporada atual
-- ⭐ **Favoritos** — marque seus animes favoritos e acompanhe pelo sidebar
-- 👁 **Assistindo** — registre quais animes você está acompanhando
+- ⭐ **Favoritos privados** — salve favoritos na sua conta
+- 👁 **Progresso por episódio** — marque exatamente os episódios assistidos
+- 👤 **Conta AniCal** — crie seu usuário e senha para acessar a biblioteca privada
 - 🔁 **Retry automático** — tratamento de rate limit com retry inteligente na API do Jikan
 - 🔒 **Chave de API protegida** — integração segura via Supabase Edge Functions
 
@@ -85,6 +86,8 @@ npm install
 
 # Crie o arquivo .env na raiz
 echo "VITE_SUPABASE_FUNCTION_URL=https://SEU_PROJETO.supabase.co/functions/v1/anime-schedule-proxy" > .env
+# Adicione também a URL e a Publishable key do projeto Supabase.
+# Use .env.example como referência; nunca publique uma service_role key.
 
 # Rode o projeto
 npm run dev
@@ -146,6 +149,25 @@ supabase functions deploy anime-schedule-proxy
 ```
 
 6. No dashboard do Supabase, desative a **JWT verification** na função para torná-la pública.
+
+### Contas e biblioteca privada
+
+O projeto inclui a migration `supabase/migrations/20260919120000_add_private_library.sql`.
+Antes de ativar esta funcionalidade em produção:
+
+1. No SQL Editor do Supabase, execute a migration (ela cria as tabelas privadas, índices, triggers e políticas RLS).
+2. Em **Authentication → Providers**, mantenha o provedor **Email** ativo. O AniCal usa cadastro próprio com nome de usuário, e-mail e senha; não precisa configurar Google.
+3. Em **Authentication → URL Configuration**, cadastre:
+   - `https://RodrigoRuan2.github.io/anime-calendar-V3/`
+   - `http://localhost:5173/`
+4. Em **Project Settings → API**, copie a Project URL e a **Publishable key** para o `.env`:
+
+```env
+VITE_SUPABASE_URL=https://rlppmkygztpdcytoeprl.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sua_publishable_key
+```
+
+As tabelas usam Row Level Security: cada usuário autenticado acessa apenas sua própria biblioteca e seus próprios episódios.
 
 ---
 

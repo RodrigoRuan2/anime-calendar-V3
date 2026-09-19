@@ -15,6 +15,7 @@ export default function SeasonGrid({
   activeFilter,
   onFilterChange,
   onToggle,
+  onFavorite,
   getStatus,
   onAnimeClick,
 }) {
@@ -72,6 +73,7 @@ export default function SeasonGrid({
               targetSeason={targetSeason}
               status={getStatus(anime)}
               onToggle={onToggle}
+              onFavorite={onFavorite}
               onClick={onAnimeClick}
             />
           ))}

@@ -1,12 +1,15 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Calendar from './components/Calendar'
 import SeasonGrid from './components/SeasonGrid'
 import Movies from './components/Movies'
-import Sidebar from './components/Sidebar'
 import AnimeModal from './components/AnimeModal'
-import { useAnimeStatus } from './hooks/useAnimeStatus'
+import AuthModal from './components/AuthModal'
+import AccountMenu from './components/AccountMenu'
+import Library from './components/Library'
+import { useAuth } from './hooks/useAuth'
+import { useUserLibrary } from './hooks/useUserLibrary'
 import { useAnimeSchedule } from './hooks/useAnimeSchedule'
-import { getAnimeKey } from './utils/animeKey'
+import { readPendingAction, storePendingAction } from './services/authApi'
 import './styles/App.css'
 
 const TABS = [
@@ -18,12 +21,13 @@ const TABS = [
 export default function App() {
   const [activeTab, setActiveTab]       = useState('calendar')
   const [seasonFilter, setSeasonFilter] = useState('all')
-  const [sidebarOpen, setSidebarOpen]   = useState(false)
   const [weekOffset, setWeekOffset]     = useState(0)
   const [selectedAnime, setSelectedAnime] = useState(null)
+  const [authOpen, setAuthOpen] = useState(false)
   const closeModal = useCallback(() => setSelectedAnime(null), [])
-
-  const { toggleStatus, getStatus, statusMap } = useAnimeStatus()
+  const { user } = useAuth()
+  const requestSignIn = useCallback((action) => { storePendingAction(action); setAuthOpen(true) }, [])
+  const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, remove } = useUserLibrary(user, requestSignIn)
   const { schedule, items: scheduleItems, range: scheduleRange, loading: scheduleLoading, error: scheduleError, partial: schedulePartial, updatedAt: scheduleUpdatedAt, now: scheduleNow, refresh: refreshSchedule } = useAnimeSchedule(weekOffset)
 
   const today = new Date()
@@ -33,17 +37,19 @@ export default function App() {
     month: 'long',
   })
 
-  // A sidebar "Minha Lista" usa apenas os dados do calendário
-  const calendarAnimes = useMemo(
-    () => Object.values(schedule).flat(),
-    [schedule],
-  )
+  const totalMarked = useMemo(() => entries.filter((entry) => entry.status === 'assistindo').length, [entries])
 
-  // Quantos animes estão marcados como "Assistindo" (badge da Minha Lista)
-  const totalMarked = useMemo(
-    () => calendarAnimes.filter((a) => statusMap[getAnimeKey(a)]?.watching).length,
-    [calendarAnimes, statusMap],
-  )
+  useEffect(() => {
+    if (!user) return undefined
+    const timer = window.setTimeout(() => {
+      const pending = readPendingAction()
+      if (!pending?.anime) return
+      if (pending.action === 'favorite') toggleFavorite(pending.anime)
+      if (pending.action === 'watching') toggleWatching(pending.anime)
+      if (pending.action?.type === 'episode' && pending.action.episodeNumber) toggleEpisode(pending.anime, pending.action.episodeNumber)
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [toggleEpisode, toggleFavorite, toggleWatching, user])
 
   return (
     <div className="app">
@@ -74,36 +80,11 @@ export default function App() {
             ))}
           </nav>
 
-          <div className="header-actions">
-            <button
-              className="sidebar-toggle-btn"
-              type="button"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Abrir lista"
-            >
-              ☰ Minha Lista
-              {totalMarked > 0 && (
-                <span className="sidebar-badge">{totalMarked}</span>
-              )}
-            </button>
-          </div>
+          <div className="header-actions"><AccountMenu user={user} onSignIn={() => setAuthOpen(true)} onOpenLibrary={() => setActiveTab('library')} />{user && totalMarked > 0 && <span className="sidebar-badge">{totalMarked}</span>}</div>
         </div>
       </header>
 
       <div className="app-layout">
-        <div
-          className={`sidebar-overlay ${sidebarOpen ? 'sidebar-overlay--visible' : ''}`}
-          onClick={() => setSidebarOpen(false)}
-        />
-
-        <Sidebar
-          allAnimes={calendarAnimes}
-          statusMap={statusMap}
-          onToggle={toggleStatus}
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
-
         <main className="app-main">
           {activeTab === 'calendar' && (
             <Calendar
@@ -116,7 +97,8 @@ export default function App() {
               updatedAt={scheduleUpdatedAt}
               now={scheduleNow}
               refresh={refreshSchedule}
-              onToggle={toggleStatus}
+              onToggle={toggleWatching}
+              onFavorite={toggleFavorite}
               getStatus={getStatus}
               weekOffset={weekOffset}
               setWeekOffset={setWeekOffset}
@@ -128,7 +110,8 @@ export default function App() {
             <SeasonGrid
               activeFilter={seasonFilter}
               onFilterChange={setSeasonFilter}
-              onToggle={toggleStatus}
+              onToggle={toggleWatching}
+              onFavorite={toggleFavorite}
               getStatus={getStatus}
               onAnimeClick={setSelectedAnime}
             />
@@ -137,10 +120,15 @@ export default function App() {
           {activeTab === 'movies' && (
             <Movies
               getStatus={getStatus}
-              onToggle={toggleStatus}
+              onToggle={toggleWatching}
+              onFavorite={toggleFavorite}
               onAnimeClick={setSelectedAnime}
             />
           )}
+
+          {activeTab === 'library' && user && <Library entries={entries} loading={libraryLoading} onStatusChange={setStatus} onFavorite={toggleFavorite} onRemove={remove} onAnimeClick={setSelectedAnime} />}
+          {activeTab === 'library' && !user && <div className="library-empty"><strong>Entre para ver sua lista.</strong><button className="account-login" onClick={() => setAuthOpen(true)}>Continuar com Google</button></div>}
+          {libraryError && <p className="weekly-notice">Não foi possível sincronizar sua lista: {libraryError}</p>}
         </main>
       </div>
 
@@ -148,10 +136,13 @@ export default function App() {
         <AnimeModal
           anime={selectedAnime}
           status={getStatus(selectedAnime)}
-          onToggle={toggleStatus}
+          onToggle={toggleWatching}
+          onFavorite={toggleFavorite}
+          onToggleEpisode={toggleEpisode}
           onClose={closeModal}
         />
       )}
+      {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
     </div>
   )
 }
