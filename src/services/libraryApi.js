@@ -45,3 +45,13 @@ export async function setEpisodeWatched(userId, libraryId, episodeNumber, watche
     if (error) throw error
   }
 }
+
+export async function markEpisodesThrough(userId, libraryId, lastEpisode) {
+  const episodes = Array.from({ length: lastEpisode }, (_, index) => ({
+    user_id: userId,
+    library_id: libraryId,
+    episode_number: index + 1,
+  }))
+  const { error } = await supabase.from('user_episode_progress').upsert(episodes, { onConflict: 'user_id,library_id,episode_number' })
+  if (error) throw error
+}

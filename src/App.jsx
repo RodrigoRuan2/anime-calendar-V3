@@ -27,7 +27,7 @@ export default function App() {
   const closeModal = useCallback(() => setSelectedAnime(null), [])
   const { user } = useAuth()
   const requestSignIn = useCallback((action) => { storePendingAction(action); setAuthOpen(true) }, [])
-  const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, remove } = useUserLibrary(user, requestSignIn)
+  const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, markThroughEpisode, remove } = useUserLibrary(user, requestSignIn)
   const { schedule, items: scheduleItems, range: scheduleRange, loading: scheduleLoading, error: scheduleError, partial: schedulePartial, updatedAt: scheduleUpdatedAt, now: scheduleNow, refresh: refreshSchedule } = useAnimeSchedule(weekOffset)
 
   const today = new Date()
@@ -45,9 +45,10 @@ export default function App() {
       if (pending.action === 'favorite') toggleFavorite(pending.anime)
       if (pending.action === 'watching') toggleWatching(pending.anime)
       if (pending.action?.type === 'episode' && pending.action.episodeNumber) toggleEpisode(pending.anime, pending.action.episodeNumber)
+      if (pending.action?.type === 'episodes-through' && pending.action.episodeNumber) markThroughEpisode(pending.anime, pending.action.episodeNumber)
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [toggleEpisode, toggleFavorite, toggleWatching, user])
+  }, [markThroughEpisode, toggleEpisode, toggleFavorite, toggleWatching, user])
 
   return (
     <div className="app">
@@ -137,6 +138,7 @@ export default function App() {
           onToggle={toggleWatching}
           onFavorite={toggleFavorite}
           onToggleEpisode={toggleEpisode}
+          onMarkThroughEpisode={markThroughEpisode}
           onClose={closeModal}
         />
       )}
