@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Calendar from './components/Calendar'
 import SeasonGrid from './components/SeasonGrid'
 import Movies from './components/Movies'
@@ -36,8 +36,6 @@ export default function App() {
     day: '2-digit',
     month: 'long',
   })
-
-  const totalMarked = useMemo(() => entries.filter((entry) => entry.status === 'assistindo').length, [entries])
 
   useEffect(() => {
     if (!user) return undefined
@@ -80,7 +78,7 @@ export default function App() {
             ))}
           </nav>
 
-          <div className="header-actions"><AccountMenu user={user} onSignIn={() => setAuthOpen(true)} onOpenLibrary={() => setActiveTab('library')} />{user && totalMarked > 0 && <span className="sidebar-badge">{totalMarked}</span>}</div>
+          <div className="header-actions"><AccountMenu user={user} onSignIn={() => setAuthOpen(true)} onOpenLibrary={() => setActiveTab('library')} /></div>
         </div>
       </header>
 
@@ -127,7 +125,7 @@ export default function App() {
           )}
 
           {activeTab === 'library' && user && <Library entries={entries} loading={libraryLoading} onStatusChange={setStatus} onFavorite={toggleFavorite} onRemove={remove} onAnimeClick={setSelectedAnime} />}
-          {activeTab === 'library' && !user && <div className="library-empty"><strong>Entre para ver sua lista.</strong><button className="account-login" onClick={() => setAuthOpen(true)}>Continuar com Google</button></div>}
+          {activeTab === 'library' && !user && <div className="library-empty"><strong>Entre para ver sua lista.</strong><button className="account-login" onClick={() => setAuthOpen(true)}>Entrar</button></div>}
           {libraryError && <p className="weekly-notice">Não foi possível sincronizar sua lista: {libraryError}</p>}
         </main>
       </div>
