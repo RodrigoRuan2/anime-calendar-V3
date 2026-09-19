@@ -27,6 +27,9 @@ jobs:
       - run: npm run build
         env:
           VITE_SUPABASE_FUNCTION_URL: ${{ secrets.SUPABASE_KEEP_ALIVE_URL }}
+          # Chave própria para o navegador; o acesso aos dados é limitado por RLS.
+          VITE_SUPABASE_URL: https://rlppmkygztpdcytoeprl.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_3M2r0YsWYqwmFnY3iIXbcA_PqmIAdU_
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
