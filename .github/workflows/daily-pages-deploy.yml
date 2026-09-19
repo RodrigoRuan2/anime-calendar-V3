@@ -26,6 +26,12 @@ jobs:
         run: npm ci
 
       - name: Testar e gerar site
+        env:
+          # A chave publishable é própria para o navegador; as tabelas continuam
+          # protegidas por RLS e não há nenhuma chave administrativa neste fluxo.
+          VITE_SUPABASE_FUNCTION_URL: https://rlppmkygztpdcytoeprl.supabase.co/functions/v1/anime-schedule-proxy
+          VITE_SUPABASE_URL: https://rlppmkygztpdcytoeprl.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_3M2r0YsWYqwmFnY3iIXbcA_PqmIAdU_
         run: |
           npm test
           npm run build
