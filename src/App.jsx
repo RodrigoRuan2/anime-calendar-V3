@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Calendar from './components/Calendar'
 import SeasonGrid from './components/SeasonGrid'
 import Movies from './components/Movies'
@@ -29,6 +29,7 @@ export default function App() {
   const requestSignIn = useCallback((action) => { storePendingAction(action); setAuthOpen(true) }, [])
   const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, markThroughEpisode, remove } = useUserLibrary(user, requestSignIn)
   const { schedule, items: scheduleItems, range: scheduleRange, loading: scheduleLoading, error: scheduleError, partial: schedulePartial, updatedAt: scheduleUpdatedAt, now: scheduleNow, refresh: refreshSchedule } = useAnimeSchedule(weekOffset)
+  const weeklyEpisodes = useMemo(() => new Map(scheduleItems.filter((anime) => anime.anilistId && Number.isInteger(Number(anime.episodeNumber))).map((anime) => [String(anime.anilistId), Number(anime.episodeNumber)])), [scheduleItems])
 
   const today = new Date()
   const formattedDate = today.toLocaleDateString('pt-BR', {
@@ -125,7 +126,7 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'library' && user && <Library entries={entries} loading={libraryLoading} onStatusChange={setStatus} onFavorite={toggleFavorite} onRemove={remove} onAnimeClick={setSelectedAnime} />}
+          {activeTab === 'library' && user && <Library entries={entries} loading={libraryLoading} weeklyEpisodes={weeklyEpisodes} onStatusChange={setStatus} onFavorite={toggleFavorite} onMarkThroughEpisode={markThroughEpisode} onRemove={remove} onAnimeClick={setSelectedAnime} />}
           {activeTab === 'library' && !user && <div className="library-empty"><strong>Entre para ver sua lista.</strong><button className="account-login" onClick={() => setAuthOpen(true)}>Entrar</button></div>}
           {libraryError && <p className="weekly-notice">Não foi possível sincronizar sua lista: {libraryError}</p>}
         </main>
