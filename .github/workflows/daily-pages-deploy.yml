@@ -7,24 +7,24 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Baixar código
-        uses: actions/checkout@v4
-
-      - name: Configurar Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-
-      - name: Instalar dependências
-        run: npm ci
-
+      - run: npm ci
       - name: Testar e gerar site
         env:
           # A chave publishable é própria para o navegador; as tabelas continuam
@@ -35,8 +35,14 @@ jobs:
         run: |
           npm test
           npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
 
-      - name: Publicar no GitHub Pages
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: npm run deploy
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
