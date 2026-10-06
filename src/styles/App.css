@@ -46,20 +46,40 @@ html {
 
 body {
   font-family: 'Noto Sans JP', sans-serif;
-  /* Fundo escuro simples, sem imagem: acaba com o lag e fica limpo.
-     Os dois brilhos radiais são só gradientes (baratos) para dar um leve
-     toque de cor nos cantos, sem peso de renderização. */
   background-color: var(--bg-primary);
-  background-image:
-    radial-gradient(ellipse at 50% 0%,    rgba(192, 57, 43, 0.10)  0%, transparent 45%),
-    radial-gradient(ellipse at 100% 100%, rgba(212, 160, 23, 0.06) 0%, transparent 45%);
-  background-repeat: no-repeat;
   color: var(--text-primary);
   min-height: 100vh;
 }
 
+/* Arte apenas na parte superior; o degradê preserva a leitura e evita
+   repetir a imagem longa abaixo do conteúdo. */
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 760px;
+  background-image:
+    linear-gradient(180deg, rgba(8, 8, 16, .55) 0%, rgba(8, 8, 16, .70) 44%, var(--bg-primary) 100%),
+    url('/images/anical-isekai-background.webp');
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  body::before {
+    height: 580px;
+    background-image:
+      linear-gradient(180deg, rgba(8, 8, 16, .70) 0%, rgba(8, 8, 16, .82) 48%, var(--bg-primary) 100%),
+      url('/images/anical-isekai-background.webp');
+    background-position: 72% top;
+  }
+}
+
 /* ── App ───────────────────────────────────────────────────── */
 .app {
+  position: relative;
   max-width: 1600px;
   margin: 0 auto;
   padding: 0 1.5rem 2rem;

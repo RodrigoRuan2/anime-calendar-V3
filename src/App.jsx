@@ -48,7 +48,7 @@ export default function App() {
   }, [toggleFavorite, toggleWatching, user])
 
   return (
-    <div className="app">
+    <div className={`app app--${activeTab}`}>
       <header className="app-header">
         <h1 className="app-header__title">
           <span className="app-header__icon">⛩</span>

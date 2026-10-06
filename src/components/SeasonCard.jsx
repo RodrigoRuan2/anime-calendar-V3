@@ -14,7 +14,6 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
   const cardRef = useRef(null)
   const [visible, setVisible] = useState(false)
   const [description, setDescription] = useState(null)
-  const [translationFailed, setTranslationFailed] = useState(false)
   const preview = getSynopsisPreview(anime.description)
   const date = seasonAgendaDate(anime, targetSeason)
   const releaseText = date.kind === 'day' ? getReleaseLabel(anime, targetSeason)
@@ -37,7 +36,7 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
     const controller = new AbortController()
     translateSynopsis(preview, controller.signal)
       .then((translation) => { if (!controller.signal.aborted) setDescription(translation) })
-      .catch(() => { if (!controller.signal.aborted) setTranslationFailed(true) })
+      .catch(() => undefined)
     return () => controller.abort()
   }, [preview, visible])
 
@@ -54,7 +53,7 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
       <div className="season-agenda-card__info">
         <p className="season-agenda-card__eyebrow">{TYPE_LABEL[anime.releaseType] || 'Anime'} · {releaseText}</p>
         <h3 className="season-agenda-card__title"><button type="button" onClick={(event) => { event.stopPropagation(); onClick?.(anime) }}>{anime.title}</button></h3>
-        <p className="season-agenda-card__description">{description || (translationFailed ? 'Sinopse em português indisponível.' : preview ? 'Traduzindo sinopse…' : 'Sinopse ainda não informada.')}</p>
+        {description && <p className="season-agenda-card__description">{description}</p>}
         <div className="season-agenda-card__tags">
           {anime.genres?.slice(0, 2).map((genre) => <span key={genre}>{genreLabel(genre)}</span>)}
           {anime.episodes && <span>{anime.episodes} eps</span>}
