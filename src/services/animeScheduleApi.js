@@ -1,10 +1,13 @@
 import axios from 'axios'
 import { getAniListMoviesByYear } from './aniListApi.js'
 import { detectScheduleChanges, getWeekRange, mergeScheduleSources, SCHEDULE_TIMEZONE } from '../utils/weeklySchedule.js'
+import { readSnapshot, writeSnapshot } from '../utils/snapshotCache.js'
+import { withDeadline } from '../utils/withDeadline.js'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_FUNCTION_URL
+const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_FUNCTION_URL
 const CACHE_TTL_MS = 5 * 60 * 1000
 const WEEKLY_CACHE_TTL_MS = 10 * 60 * 1000
+const WEEKLY_STALE_MS = 24 * 60 * 60 * 1000
 const ANILIST_URL = 'https://graphql.anilist.co'
 
 function cacheGet(key) {
@@ -94,10 +97,10 @@ const ANILIST_AIRING_QUERY = `query ($page: Int!, $start: Int!, $end: Int!) {
   }
 }`
 
-async function getAniListAiringSchedule(range) {
+async function getAniListAiringSchedule(range, signal) {
   const items = []
   for (let page = 1; page <= 5; page += 1) {
-    const response = await axios.post(ANILIST_URL, { query: ANILIST_AIRING_QUERY, variables: { page, start: Math.floor(range.start.getTime() / 1000), end: Math.floor(range.end.getTime() / 1000) } })
+    const response = await axios.post(ANILIST_URL, { query: ANILIST_AIRING_QUERY, variables: { page, start: Math.floor(range.start.getTime() / 1000), end: Math.floor(range.end.getTime() / 1000) } }, { signal })
     if (response.data?.errors?.length) throw new Error(response.data.errors[0].message)
     const result = response.data?.data?.Page
     items.push(...(result?.airingSchedules || []).map((schedule) => ({
@@ -122,18 +125,18 @@ async function getAniListAiringSchedule(range) {
   return items
 }
 
-async function getAnimeScheduleForCurrentWeek(weekOffset) {
+async function getAnimeScheduleForCurrentWeek(weekOffset, signal) {
   if (weekOffset !== 0 || !SUPABASE_URL) throw new Error('AnimeSchedule indisponível para esta semana.')
   const params = new URLSearchParams({ tz: SCHEDULE_TIMEZONE })
-  const response = await axios.get(SUPABASE_URL + '?' + params.toString())
+  const response = await axios.get(SUPABASE_URL + '?' + params.toString(), { signal })
   return (response.data || []).map(normalizeAnimeScheduleEpisode)
 }
 
-async function getTsuzukiSchedule(start, days, format) {
+async function getTsuzukiSchedule(start, days, format, signal) {
   const params = new URLSearchParams({ start, days: String(days), airType: 'sub' })
   if (format) params.set('format', format)
 
-  const response = await axios.get(`https://tsuzuki.top/api/v1/schedule?${params.toString()}`)
+  const response = await axios.get(`https://tsuzuki.top/api/v1/schedule?${params.toString()}`, { signal })
   if (!response.data?.ok || !Array.isArray(response.data.episodes)) {
     throw new Error('A agenda de lançamentos não retornou dados válidos.')
   }
@@ -141,7 +144,7 @@ async function getTsuzukiSchedule(start, days, format) {
   return response.data.episodes.map(normalizeTsuzukiEpisode)
 }
 
-export async function getWeeklyTimetable(weekOffset = 0) {
+export async function getWeeklyTimetable(weekOffset = 0, signal) {
   const cacheKey = `anicaltimetable_v2_${weekOffset}`
   const cached = cacheGet(cacheKey)
   if (cached) return cached
@@ -150,7 +153,7 @@ export async function getWeeklyTimetable(weekOffset = 0) {
   // oficiais. Para a próxima semana usamos uma API baseada em datas reais:
   // antes, o app apenas somava 7 dias aos episódios desta semana.
   if (weekOffset > 0) {
-    const data = await getTsuzukiSchedule(getMondayDate(weekOffset), 7)
+    const data = await getTsuzukiSchedule(getMondayDate(weekOffset), 7, undefined, signal)
     cacheSet(cacheKey, data)
     return data
   }
@@ -160,37 +163,67 @@ export async function getWeeklyTimetable(weekOffset = 0) {
   }
 
   const params = new URLSearchParams({ tz: 'America/Sao_Paulo' })
-  const response = await axios.get(SUPABASE_URL + '?' + params.toString())
+  const response = await axios.get(SUPABASE_URL + '?' + params.toString(), { signal })
   cacheSet(cacheKey, response.data)
   return response.data
 }
 
-export async function getAggregatedWeeklySchedule({ weekOffset = 0, timezone = SCHEDULE_TIMEZONE, forceRefresh = false } = {}) {
+export async function getAggregatedWeeklySchedule({ weekOffset = 0, timezone = SCHEDULE_TIMEZONE, forceRefresh = false, onUpdate, signal } = {}) {
   const range = getWeekRange(weekOffset, timezone)
   const cacheKey = `anical:weekly:v7:${range.startDate}:${timezone}`
-  if (!forceRefresh) {
-    try {
-      const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null')
-      if (cached && Date.now() - cached.timestamp < WEEKLY_CACHE_TTL_MS) return cached.data
-    } catch { /* no cache */ }
+  const cached = readSnapshot(cacheKey, WEEKLY_STALE_MS)
+  const freshFor = cached?.data?.partial ? 2 * 60 * 1000 : WEEKLY_CACHE_TTL_MS
+  if (cached && !forceRefresh && cached.age < freshFor) {
+    onUpdate?.({ ...cached.data, updating: false, stale: false })
+    return cached.data
   }
+  if (cached) onUpdate?.({ ...cached.data, updating: true, stale: true })
 
-  const [animeSchedule, tsuzuki, aniList] = await Promise.allSettled([
-    getAnimeScheduleForCurrentWeek(weekOffset),
-    getTsuzukiSchedule(range.startDate, 7),
-    getAniListAiringSchedule(range),
-  ])
-  const lists = [animeSchedule, tsuzuki, aniList].map((result) => result.status === 'fulfilled' ? result.value : [])
-  if (!lists.some((list) => list.length)) throw new Error('Não foi possível atualizar o calendário.')
+  const sources = [
+    { name: 'animeschedule', enabled: weekOffset === 0 && Boolean(SUPABASE_URL), timeout: 10000, load: (requestSignal) => getAnimeScheduleForCurrentWeek(weekOffset, requestSignal) },
+    { name: 'tsuzuki', enabled: true, timeout: 10000, load: (requestSignal) => getTsuzukiSchedule(range.startDate, 7, undefined, requestSignal) },
+    { name: 'anilist', enabled: true, timeout: 12000, load: (requestSignal) => getAniListAiringSchedule(range, requestSignal) },
+  ]
+  const lists = sources.map(() => [])
+  const states = sources.map((source) => source.enabled ? 'pending' : 'unavailable')
+  let bestPreview = Infinity
+  const tasks = sources.map((source, index) => {
+    if (!source.enabled) return Promise.resolve()
+    return withDeadline(source.load, source.timeout, signal).then((items) => {
+      lists[index] = items
+      states[index] = 'fulfilled'
+      if (!signal?.aborted && !cached && items.length && index < bestPreview) {
+        bestPreview = index
+        onUpdate?.({
+          items: mergeScheduleSources([items], timezone), range, partial: false,
+          sourceStatus: Object.fromEntries(sources.map((entry, position) => [entry.name, states[position] === 'fulfilled'])),
+          updatedAt: new Date().toISOString(), updating: true, stale: false,
+        })
+      }
+    }).catch((error) => {
+      states[index] = 'rejected'
+      throw error
+    })
+  })
+  await Promise.allSettled(tasks)
+  if (signal?.aborted) throw signal.reason || new Error('Atualização cancelada.')
+  if (!lists.some((list) => list.length)) {
+    if (cached) {
+      const fallback = { ...cached.data, partial: true, updating: false, stale: true }
+      onUpdate?.(fallback)
+      return fallback
+    }
+    throw new Error('Não foi possível atualizar o calendário.')
+  }
 
   const data = {
-    items: detectScheduleChanges(mergeScheduleSources(lists, timezone)),
-    range,
-    partial: [animeSchedule, tsuzuki, aniList].some((result) => result.status === 'rejected'),
-    sourceStatus: { animeschedule: animeSchedule.status === 'fulfilled', tsuzuki: tsuzuki.status === 'fulfilled', anilist: aniList.status === 'fulfilled' },
-    updatedAt: new Date().toISOString(),
+    items: detectScheduleChanges(mergeScheduleSources(lists, timezone)), range,
+    partial: states.includes('rejected') || (weekOffset === 0 && !SUPABASE_URL),
+    sourceStatus: Object.fromEntries(sources.map((source, index) => [source.name, states[index] === 'fulfilled'])),
+    updatedAt: new Date().toISOString(), updating: false, stale: false,
   }
-  try { sessionStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data })) } catch { /* no cache */ }
+  writeSnapshot(cacheKey, data)
+  onUpdate?.(data)
   return data
 }
 

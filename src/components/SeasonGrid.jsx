@@ -20,7 +20,7 @@ export default function SeasonGrid({
   onAnimeClick,
 }) {
   const [targetSeason, setTargetSeason] = useState(() => getSeasonForDate())
-  const { animes, loading, error } = useSeasonAnime(targetSeason)
+  const { animes, loading, error, updating, stale } = useSeasonAnime(targetSeason)
 
   const filtered = animes.filter((anime) => {
     const status = getStatus(anime)
@@ -54,6 +54,8 @@ export default function SeasonGrid({
           </button>
         ))}
         <span className="season-count">{filtered.length} animes</span>
+        {!loading && updating && <span className="season-sync">Atualizando fontes…</span>}
+        {!loading && stale && !updating && <span className="season-sync">Exibindo última versão salva</span>}
       </div>
 
       {loading ? (

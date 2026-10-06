@@ -34,7 +34,7 @@ export default function App() {
   const { user } = useAuth()
   const requestSignIn = useCallback((action) => { storePendingAction(action); setAuthOpen(true) }, [])
   const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, markThroughEpisode, remove } = useUserLibrary(user, requestSignIn)
-  const { schedule, items: scheduleItems, range: scheduleRange, loading: scheduleLoading, error: scheduleError, partial: schedulePartial, updatedAt: scheduleUpdatedAt, now: scheduleNow, refresh: refreshSchedule } = useAnimeSchedule(weekOffset)
+  const { schedule, items: scheduleItems, range: scheduleRange, loading: scheduleLoading, error: scheduleError, partial: schedulePartial, updating: scheduleUpdating, stale: scheduleStale, updatedAt: scheduleUpdatedAt, now: scheduleNow, refresh: refreshSchedule } = useAnimeSchedule(weekOffset)
   const weeklyEpisodes = useMemo(() => new Map(scheduleItems.filter((anime) => anime.anilistId && Number.isInteger(Number(anime.episodeNumber))).map((anime) => [String(anime.anilistId), Number(anime.episodeNumber)])), [scheduleItems])
 
   useEffect(() => {
@@ -86,6 +86,8 @@ export default function App() {
               loading={scheduleLoading}
               error={scheduleError}
               partial={schedulePartial}
+              updating={scheduleUpdating}
+              stale={scheduleStale}
               updatedAt={scheduleUpdatedAt}
               now={scheduleNow}
               refresh={refreshSchedule}

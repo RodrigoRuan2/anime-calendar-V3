@@ -119,6 +119,8 @@
   margin-left: auto;
 }
 
+.season-sync { color: #d5ad5f; font-size: .75rem; }
+
 /* Grid */
 .season-grid {
   display: grid;
@@ -151,6 +153,7 @@
   .season-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
   .season-filter-btn { min-width: 0; min-height: 44px; padding: .45rem .6rem; font-size: .8rem; }
   .season-count { grid-column: 1 / -1; margin: 0; font-size: .8rem; }
+  .season-sync { grid-column: 1 / -1; font-size: .78rem; }
   .season-grid { grid-template-columns: minmax(0, 1fr); gap: .8rem; }
 }
 

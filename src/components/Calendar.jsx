@@ -17,7 +17,7 @@ function labelForRange(range) {
   return `${date(start)} – ${date(end)}`
 }
 
-export default function Calendar({ schedule, items = [], loading, error, partial, updatedAt, now, refresh, onToggle, onMarkThroughEpisode, onFavorite, getStatus, weekOffset, setWeekOffset, onAnimeClick, range }) {
+export default function Calendar({ schedule, items = [], loading, error, partial, updating, stale, updatedAt, now, refresh, onToggle, onMarkThroughEpisode, onFavorite, getStatus, weekOffset, setWeekOffset, onAnimeClick, range }) {
   const todayKey = getLocalScheduleFields(now, SCHEDULE_TIMEZONE).weekday
   const [selectedDay, setSelectedDay] = useState(todayKey)
   const [filter, setFilter] = useState('all')
@@ -69,8 +69,9 @@ export default function Calendar({ schedule, items = [], loading, error, partial
           <button onClick={() => shiftWeek(1)} aria-label="Próxima semana">→</button>
         </div>
       </header>
-      {partial && <p className="weekly-notice">Algumas informações podem estar indisponíveis. Exibindo fontes disponíveis.</p>}
-      {updatedAt && <p className="weekly-updated">Atualizado às {new Date(updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · BRT</p>}
+      {stale && !updating && <p className="weekly-notice">Não foi possível atualizar agora. Exibindo a última agenda salva.</p>}
+      {partial && !stale && <p className="weekly-notice">Algumas informações podem estar indisponíveis. Exibindo fontes disponíveis.</p>}
+      {updatedAt && <p className="weekly-updated">{updating ? 'Atualizando fontes · ' : 'Atualizado às '}{new Date(updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · BRT</p>}
 
       <div className="day-selector" role="tablist" aria-label="Dias da semana" ref={daySelectorRef}>
         {weekDays.map((day) => {
