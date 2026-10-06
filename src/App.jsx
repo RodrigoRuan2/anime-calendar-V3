@@ -14,9 +14,10 @@ import { readPendingAction, storePendingAction } from './services/authApi'
 import './styles/App.css'
 
 const TABS = [
-  { key: 'calendar', label: '📅 Calendário' },
-  { key: 'season',   label: '🎌 Temporada'  },
-  { key: 'movies',   label: '🎬 Filmes'     },
+  { key: 'calendar', label: 'Agenda' },
+  { key: 'season', label: 'Temporada' },
+  { key: 'movies', label: 'Filmes' },
+  { key: 'library', label: 'Minha lista' },
 ]
 
 export default function App() {
@@ -35,13 +36,6 @@ export default function App() {
   const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, markThroughEpisode, remove } = useUserLibrary(user, requestSignIn)
   const { schedule, items: scheduleItems, range: scheduleRange, loading: scheduleLoading, error: scheduleError, partial: schedulePartial, updatedAt: scheduleUpdatedAt, now: scheduleNow, refresh: refreshSchedule } = useAnimeSchedule(weekOffset)
   const weeklyEpisodes = useMemo(() => new Map(scheduleItems.filter((anime) => anime.anilistId && Number.isInteger(Number(anime.episodeNumber))).map((anime) => [String(anime.anilistId), Number(anime.episodeNumber)])), [scheduleItems])
-
-  const today = new Date()
-  const formattedDate = today.toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
-  })
 
   useEffect(() => {
     if (!user) return undefined
@@ -64,16 +58,8 @@ export default function App() {
           <span className="app-header__title-text">AniCal</span>
         </h1>
 
-        <p className="app-header__subtitle">
-          Acompanhe os lançamentos semanais de animes e onde assistir
-        </p>
-
-        <div className="today-banner">
-          📅 Hoje é {formattedDate}
-        </div>
-
         <div className="app-tabs-wrapper">
-          <nav className="app-tabs">
+          <nav className="app-tabs" aria-label="Navegação principal">
             {TABS.map((tab) => (
               <button
                 key={tab.key}

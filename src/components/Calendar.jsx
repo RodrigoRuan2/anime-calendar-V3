@@ -51,7 +51,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
     if (platform !== 'all' && anime.platform !== platform) return false
     return !query || text.includes(query.toLowerCase())
   })
-  const selected = DAYS.find((day) => day.key === selectedDay) || DAYS[0]
+  const selected = weekDays.find((day) => day.key === selectedDay) || weekDays[0]
   const resetToday = () => { setWeekOffset(0); setSelectedDay(todayKey); setFilter('all') }
   const shiftWeek = (direction) => { setWeekOffset((value) => value + direction); if (filter === 'today') setFilter('all') }
 
@@ -61,7 +61,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
   return (
     <section className="calendar-container">
       <header className="weekly-header">
-        <div className="weekly-header__intro"><div><p className="weekly-header__eyebrow">Calendário</p><h2>Seus lançamentos da semana</h2></div><button className="weekly-header__today" onClick={resetToday}>Hoje</button></div>
+        <div className="weekly-header__intro"><div><p className="weekly-header__eyebrow">Calendário semanal</p><h2>O que estreia nesta semana</h2><p className="weekly-header__period">{labelForRange(range)} · horários em Brasília</p></div><button className="weekly-header__today" onClick={resetToday}>Hoje</button></div>
         <div className="weekly-navigation">
           <button onClick={() => shiftWeek(-1)} aria-label="Semana anterior">←</button>
           <span className="weekly-range">{labelForRange(range)}</span>
@@ -83,7 +83,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
       </div>
 
       <div className="weekly-filters">
-        {['all', 'watching', 'today', 'upcoming'].map((value) => <button key={value} className={filter === value ? 'active' : ''} onClick={() => { setFilter(value); if (value === 'today') { setWeekOffset(0); setSelectedDay(todayKey) } }}>{({ all: 'Todos', watching: 'Assistindo', today: 'Hoje', upcoming: 'Próximos' })[value]}</button>)}
+        {['all', 'library', 'watching', 'today', 'upcoming'].map((value) => <button key={value} className={filter === value ? 'active' : ''} aria-pressed={filter === value} onClick={() => { setFilter(value); if (value === 'today') { setWeekOffset(0); setSelectedDay(todayKey) } }}>{({ all: 'Todos', library: 'Minha lista', watching: 'Assistindo', today: 'Hoje', upcoming: 'Próximos' })[value]}</button>)}
         <select value={platform} onChange={(event) => setPlatform(event.target.value)} aria-label="Filtrar plataforma"><option value="all">Todas plataformas</option>{platforms.map((value) => <option key={value} value={value}>{value}</option>)}</select>
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar anime..." aria-label="Buscar anime" />
       </div>
@@ -102,7 +102,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
         <button className="weekly-mobile-filters__done" onClick={() => setFiltersOpen(false)}>Ver episódios</button>
       </div>}
 
-      <div className="day-view__header"><h3 className="day-view__name">{selected.label} {weekOffset === 0 && selectedDay === todayKey && <span className="day-view__today-tag">Hoje</span>}</h3><span className="day-view__date">{visibleItems.length} {visibleItems.length === 1 ? 'episódio' : 'episódios'}</span></div>
+      <div className="day-view__header"><h3 className="day-view__name">{selected.label}, {selected.date} {weekOffset === 0 && selectedDay === todayKey && <span className="day-view__today-tag">Hoje</span>}</h3><span className="day-view__date">{visibleItems.length} {visibleItems.length === 1 ? 'episódio' : 'episódios'}</span></div>
       {visibleItems.length === 0 ? <p className="day-view__empty">{filter === 'library' ? 'Nenhum anime da sua lista aparece neste dia.' : 'Não há episódios conhecidos para este dia.'}</p> : <div className="day-grid">{visibleItems.map((anime) => <AnimeCard key={anime.id} anime={anime} status={getStatus(anime)} onToggle={onToggle} onMarkThroughEpisode={onMarkThroughEpisode} onFavorite={onFavorite} onClick={onAnimeClick} temporalStatus={getTemporalStatus(anime, now)} />)}</div>}
     </section>
   )

@@ -62,36 +62,31 @@ body {
 .app {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0 1.5rem 2rem;
 }
 
 /* ── Header ────────────────────────────────────────────────── */
 .app-header {
-  text-align: center;
-  padding-bottom: 2rem;
-  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-height: 74px;
+  padding: .65rem 0;
+  border-bottom: 1px solid var(--border-hover);
   position: relative;
-}
-
-.app-header::after {
-  content: '';
-  display: block;
-  width: 120px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-sakura), var(--accent-gold), transparent);
-  margin: 1.25rem auto 0;
 }
 
 .app-header__title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  font-size: 2.05rem;
   line-height: 1;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.065em;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
+  gap: 0.32rem;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 .app-header__icon {
@@ -131,21 +126,17 @@ body {
 /* ── Abas ──────────────────────────────────────────────────── */
 .app-tabs-wrapper {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
+  flex: 1;
+  gap: 1.25rem;
 }
 
 .app-tabs {
   display: flex;
-  justify-content: center;
-  gap: 0.4rem;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  padding: 0.25rem;
+  justify-content: flex-end;
+  gap: 0.3rem;
 }
 
 .app-tab {
@@ -153,10 +144,11 @@ body {
   border: none;
   color: var(--text-muted);
   font-family: 'Noto Sans JP', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  padding: 0.5rem 1.3rem;
-  border-radius: 99px;
+  min-height: 42px;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: 0.02em;
@@ -165,9 +157,8 @@ body {
 .app-tab:hover { color: var(--text-primary); }
 
 .app-tab--active {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 18px var(--accent-glow);
+  background: rgba(200, 144, 26, .15);
+  color: #f2be57;
 }
 
 /* ── Header action buttons ──────────────────────────────────── */
@@ -232,7 +223,7 @@ body {
   display: flex;
   gap: 1.5rem;
   align-items: flex-start;
-  margin-top: 1.5rem;
+  margin-top: 1.65rem;
 }
 
 .app-main {
@@ -291,6 +282,9 @@ body {
 @media (max-width: 900px) {
   .app-layout { flex-direction: column; }
   .app-main { width: 100%; }
+  .app-header { gap: .7rem; }
+  .app-tabs-wrapper { gap: .5rem; }
+  .app-tab { padding-inline: .7rem; font-size: .78rem; }
 }
 
 @media (max-width: 640px) {
@@ -312,10 +306,10 @@ body {
     text-align: left;
     backdrop-filter: blur(14px);
   }
-  .app-header::after, .app-header__subtitle, .today-banner, .app-tabs { display: none; }
+  .app-header__subtitle, .today-banner, .app-tabs { display: none; }
   .app-header__title { justify-content: flex-start; gap: .35rem; font-size: 1.75rem; }
   .app-header__icon { font-size: .88em; }
-  .app-tabs-wrapper { margin: 0 0 0 auto; }
+  .app-tabs-wrapper { flex: none; margin: 0 0 0 auto; }
   .account-menu__trigger, .account-login {
     min-width: 44px;
     min-height: 44px;
