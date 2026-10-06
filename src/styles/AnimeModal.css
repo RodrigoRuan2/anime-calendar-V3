@@ -262,7 +262,10 @@
   border-color: rgba(212, 160, 23, 0.4);
   color: var(--accent-gold);
 }
-.modal__progress-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }.modal__progress-heading span { color: var(--text-muted); font-size: .72rem; }.modal__weekly-progress { width: 100%; margin: .5rem 0 .8rem; padding: .62rem .8rem; border: 1px solid rgba(74,222,128,.4); border-radius: 8px; background: rgba(74,222,128,.1); color: #75dd91; font: inherit; font-size: .74rem; font-weight: 800; cursor: pointer; }.modal__weekly-progress:hover:not(:disabled) { background: rgba(74,222,128,.16); }.modal__weekly-progress:disabled { border-color: var(--border); background: var(--bg-card); color: var(--text-muted); cursor: default; }.modal__episode-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(53px, 1fr)); gap: .35rem; }.modal__episode-grid button { padding: .42rem .25rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-muted); font: inherit; font-size: .62rem; font-weight: 700; cursor: pointer; }.modal__episode-grid button.watched { border-color: rgba(74,222,128,.5); background: rgba(74,222,128,.11); color: #75dd91; }.modal__progress-empty { color: var(--text-muted); font-size: .76rem; line-height: 1.5; }
+.modal__progress-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }.modal__progress-heading span { color: var(--text-muted); font-size: .72rem; }
+.modal__progress-help { margin: .35rem 0 .7rem; color: var(--text-muted); font-size: .74rem; }
+.modal__episode-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(53px, 1fr)); gap: .35rem; }.modal__episode-grid button { padding: .42rem .25rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-muted); font: inherit; font-size: .62rem; font-weight: 700; cursor: pointer; }.modal__episode-grid button.watched { border-color: rgba(74,222,128,.5); background: rgba(74,222,128,.11); color: #75dd91; }
+.modal__episode-picker { display: grid; gap: .4rem; color: var(--text-muted); font-size: .76rem; }.modal__episode-picker > div { display: flex; gap: .5rem; }.modal__episode-picker input { width: 100px; min-height: 44px; padding: .55rem; border: 1px solid var(--border-hover); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font: inherit; }.modal__episode-picker button { min-height: 44px; padding: .55rem .8rem; border: 1px solid rgba(74,222,128,.4); border-radius: 8px; background: rgba(74,222,128,.1); color: #75dd91; font: inherit; font-weight: 800; cursor: pointer; }.modal__episode-picker button:disabled { opacity: .45; cursor: default; }
 
 /* Loading state */
 .modal__loading {
@@ -300,7 +303,6 @@
   .modal__stat, .modal__schedule-info, .modal__progress-heading span { font-size: .78rem; }
   .modal__actions { gap: .5rem; }
   .modal__action-btn { min-width: 0; min-height: 48px; padding: .6rem; font-size: .8rem; }
-  .modal__weekly-progress { min-height: 48px; font-size: .81rem; }
   .modal__episode-grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: .45rem; }
   .modal__episode-grid button { min-height: 44px; font-size: .78rem; }
   .modal__stream-link { display: inline-flex; min-height: 44px; align-items: center; padding: .5rem .7rem; font-size: .75rem; }

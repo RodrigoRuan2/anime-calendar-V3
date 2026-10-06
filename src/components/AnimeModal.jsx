@@ -18,9 +18,10 @@ const PLATFORM_COLORS = {
   bilibili:    '#00A1D6',
 }
 
-export default function AnimeModal({ anime, status, onToggle, onFavorite, onToggleEpisode, onMarkThroughEpisode, onClose }) {
+export default function AnimeModal({ anime, status, onToggle, onFavorite, onToggleEpisode, onClose }) {
   const [details, setDetails] = useState(null)
   const [loadingDetails, setLoadingDetails] = useState(true)
+  const [episodeInput, setEpisodeInput] = useState(() => String(Number(anime.episodeNumber) || Math.max(0, ...(status?.watchedEpisodes || [])) + 1))
 
   // Fecha com ESC
   useEffect(() => {
@@ -83,10 +84,10 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onTogg
   const hasScheduleInfo = anime.episodeNumber || anime.localDate || anime.scheduleSources?.length
   const watchedEpisodes = status?.watchedEpisodes || []
   const episodeCount = episodes || anime.episodes || 0
-  const scheduledEpisode = Number(anime.episodeNumber)
-  const weeklyEpisode = Number.isInteger(scheduledEpisode) && scheduledEpisode > 0 ? Math.min(scheduledEpisode, episodeCount || scheduledEpisode) : null
-  const isCaughtUp = weeklyEpisode && watchedEpisodes.filter((episode) => episode <= weeklyEpisode).length >= weeklyEpisode
   const episodeButtons = episodeCount > 0 && episodeCount <= 150 ? Array.from({ length: episodeCount }, (_, index) => index + 1) : []
+  const enteredEpisode = Number(episodeInput)
+  const validEpisode = Number.isInteger(enteredEpisode) && enteredEpisode > 0 && (!episodeCount || enteredEpisode <= episodeCount)
+  const enteredEpisodeWatched = validEpisode && watchedEpisodes.includes(enteredEpisode)
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -198,8 +199,8 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onTogg
               <div className="modal__divider" />
               <section className="modal__progress">
                 <div className="modal__progress-heading"><p className="modal__synopsis-label">Progresso por episódio</p><span>{watchedEpisodes.length}{episodeCount ? ` de ${episodeCount}` : ''} assistidos</span></div>
-                {weeklyEpisode && <button className="modal__weekly-progress" onClick={() => onMarkThroughEpisode?.(anime, weeklyEpisode)} disabled={isCaughtUp}>{isCaughtUp ? `Você está em dia até o EP ${weeklyEpisode}` : `✓ Estou em dia até o EP ${weeklyEpisode}`}</button>}
-                {episodeButtons.length > 0 ? <div className="modal__episode-grid">{episodeButtons.map((episode) => <button key={episode} className={watchedEpisodes.includes(episode) ? 'watched' : ''} onClick={() => onToggleEpisode?.(anime, episode)} aria-pressed={watchedEpisodes.includes(episode)}>EP {episode}</button>)}</div> : <p className="modal__progress-empty">Os episódios serão liberados para marcar quando a quantidade total estiver disponível.</p>}
+                <p className="modal__progress-help">Cada ação altera somente o episódio escolhido.</p>
+                {episodeButtons.length > 0 ? <div className="modal__episode-grid">{episodeButtons.map((episode) => <button key={episode} className={watchedEpisodes.includes(episode) ? 'watched' : ''} onClick={() => onToggleEpisode?.(anime, episode)} aria-pressed={watchedEpisodes.includes(episode)}>EP {episode}</button>)}</div> : <form className="modal__episode-picker" onSubmit={(event) => { event.preventDefault(); if (validEpisode) onToggleEpisode?.(anime, enteredEpisode) }}><label htmlFor="episode-number">Número do episódio</label><div><input id="episode-number" type="number" inputMode="numeric" min="1" max={episodeCount || undefined} value={episodeInput} onChange={(event) => setEpisodeInput(event.target.value)} /><button type="submit" disabled={!validEpisode}>{enteredEpisodeWatched ? 'Desmarcar episódio' : 'Marcar como visto'}</button></div></form>}
               </section>
             </>
           )}

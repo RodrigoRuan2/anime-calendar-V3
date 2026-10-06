@@ -11,6 +11,7 @@ import { useAuth } from './hooks/useAuth'
 import { useUserLibrary } from './hooks/useUserLibrary'
 import { useAnimeSchedule } from './hooks/useAnimeSchedule'
 import { readPendingAction, storePendingAction } from './services/authApi'
+import { getAiredWeeklyEpisodes } from './utils/episodeProgress'
 import './styles/App.css'
 
 const TABS = [
@@ -33,9 +34,9 @@ export default function App() {
   }, [])
   const { user } = useAuth()
   const requestSignIn = useCallback((action) => { storePendingAction(action); setAuthOpen(true) }, [])
-  const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, markThroughEpisode, remove } = useUserLibrary(user, requestSignIn)
+  const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, remove } = useUserLibrary(user, requestSignIn)
   const { schedule, items: scheduleItems, range: scheduleRange, loading: scheduleLoading, error: scheduleError, partial: schedulePartial, updating: scheduleUpdating, stale: scheduleStale, updatedAt: scheduleUpdatedAt, now: scheduleNow, refresh: refreshSchedule } = useAnimeSchedule(weekOffset)
-  const weeklyEpisodes = useMemo(() => new Map(scheduleItems.filter((anime) => anime.anilistId && Number.isInteger(Number(anime.episodeNumber))).map((anime) => [String(anime.anilistId), Number(anime.episodeNumber)])), [scheduleItems])
+  const weeklyEpisodes = useMemo(() => getAiredWeeklyEpisodes(scheduleItems, scheduleNow), [scheduleItems, scheduleNow])
 
   useEffect(() => {
     if (!user) return undefined
@@ -45,10 +46,9 @@ export default function App() {
       if (pending.action === 'favorite') toggleFavorite(pending.anime)
       if (pending.action === 'watching') toggleWatching(pending.anime)
       if (pending.action?.type === 'episode' && pending.action.episodeNumber) toggleEpisode(pending.anime, pending.action.episodeNumber)
-      if (pending.action?.type === 'episodes-through' && pending.action.episodeNumber) markThroughEpisode(pending.anime, pending.action.episodeNumber)
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [markThroughEpisode, toggleEpisode, toggleFavorite, toggleWatching, user])
+  }, [toggleEpisode, toggleFavorite, toggleWatching, user])
 
   return (
     <div className="app">
@@ -92,7 +92,7 @@ export default function App() {
               now={scheduleNow}
               refresh={refreshSchedule}
               onToggle={toggleWatching}
-              onMarkThroughEpisode={markThroughEpisode}
+              onToggleEpisode={toggleEpisode}
               onFavorite={toggleFavorite}
               getStatus={getStatus}
               weekOffset={weekOffset}
@@ -124,7 +124,7 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'library' && user && <Library entries={entries} loading={libraryLoading} weeklyEpisodes={weeklyEpisodes} onStatusChange={setStatus} onFavorite={toggleFavorite} onMarkThroughEpisode={markThroughEpisode} onRemove={remove} onAnimeClick={setSelectedAnime} />}
+          {activeTab === 'library' && user && <Library entries={entries} loading={libraryLoading} weeklyEpisodes={weeklyEpisodes} onStatusChange={setStatus} onFavorite={toggleFavorite} onToggleEpisode={toggleEpisode} onRemove={remove} onAnimeClick={setSelectedAnime} />}
           {activeTab === 'library' && !user && <div className="library-empty"><strong>Entre para ver sua lista.</strong><button className="account-login" onClick={() => setAuthOpen(true)}>Entrar</button></div>}
           {libraryError && <p className="weekly-notice">Não foi possível sincronizar sua lista: {libraryError}</p>}
         </main>
@@ -139,7 +139,6 @@ export default function App() {
           onToggle={toggleWatching}
           onFavorite={toggleFavorite}
           onToggleEpisode={toggleEpisode}
-          onMarkThroughEpisode={markThroughEpisode}
           onClose={closeModal}
         />
       )}

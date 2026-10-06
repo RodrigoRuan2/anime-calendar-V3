@@ -20,9 +20,8 @@
 .library-card__open { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; line-height: inherit; text-align: left; cursor: pointer; }
 .library-card p { margin-top: .3rem; color: var(--text-muted); font-size: .72rem; }
 .library-card__actions { display: flex; flex-wrap: wrap; gap: .4rem; }
-.library-card__weekly-progress { width: 100%; border-color: rgba(74,222,128,.4) !important; background: rgba(74,222,128,.1) !important; color: #75dd91 !important; font-weight: 800 !important; }
-.library-card__weekly-progress:hover:not(:disabled) { background: rgba(74,222,128,.16) !important; }
-.library-card__weekly-progress:disabled { border-color: var(--border) !important; background: var(--bg-secondary) !important; color: var(--text-muted) !important; cursor: default; }
+.library-card__episode-action { width: 100%; border-color: rgba(74,222,128,.4) !important; background: rgba(74,222,128,.1) !important; color: #75dd91 !important; font-weight: 800 !important; }
+.library-card__episode-action:hover { background: rgba(74,222,128,.16) !important; }
 .library-card__actions select, .library-card__actions button { min-width: 0; border: 1px solid var(--border); border-radius: 7px; background: var(--bg-secondary); color: var(--text-muted); font: inherit; font-size: .7rem; padding: .42rem; }
 .library-card__actions select { flex: 1; }
 .library-card__actions button { cursor: pointer; font-size: 1rem; line-height: 1; }
@@ -39,8 +38,8 @@
   .library-card__actions { gap: .35rem; }
   .library-card__actions select, .library-card__actions button { min-height: 44px; padding: .45rem; font-size: .78rem; }
   .library-card__actions select { min-width: 76px; }
-  .library-card__actions button:not(.library-card__weekly-progress) { width: 44px; flex: none; font-size: 1.2rem; }
-  .library-card__weekly-progress { font-size: .73rem !important; }
+  .library-card__actions button:not(.library-card__episode-action) { width: 44px; flex: none; font-size: 1.2rem; }
+  .library-card__episode-action { font-size: .73rem !important; }
 }
 
 @media (max-width: 640px) {
