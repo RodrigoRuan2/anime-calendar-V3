@@ -4,12 +4,15 @@ const MAX_CHUNK_LENGTH = 450
 
 export function cleanSynopsis(text) {
   return String(text || '')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
     .replace(/<br\s*\/?>(\r?\n)?/gi, ' ')
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
     .replace(/&#39;|&apos;/gi, "'")
     .replace(/&quot;/gi, '"')
+    .replace(/&#(\d+);/g, (entity, code) => Number(code) <= 0x10ffff ? String.fromCodePoint(Number(code)) : entity)
     .replace(/\s+/g, ' ')
     .trim()
 }
@@ -23,7 +26,15 @@ export function getSynopsisPreview(text, maxLength = 430) {
 }
 
 function cacheKey(text) {
-  return `anical_translation_${text.slice(0, 120)}`
+  return `anical_translation_v2_${text.slice(0, 120)}`
+}
+
+export function usableTranslation(original, translated) {
+  const cleaned = cleanSynopsis(translated)
+  if (!cleaned || /^(mymemory warning|translation failed|quota exceeded|please select two distinct languages)/i.test(cleaned)) return null
+  const englishWords = original.match(/\b(the|and|with|from|this|that|their|about|after|before|story|part|world|season)\b/gi) || []
+  if (cleaned.toLowerCase() === original.toLowerCase() && original.length >= 35 && englishWords.length >= 2) return null
+  return cleaned
 }
 
 function getCachedTranslation(text) {
@@ -72,6 +83,7 @@ async function translateWithMyMemory(text, signal) {
 
     const data = await response.json()
     if (!data.responseData?.translatedText) throw new Error('A tradução retornou vazia.')
+    if (data.responseStatus && Number(data.responseStatus) !== 200) throw new Error('O serviço de tradução recusou o texto.')
     return data.responseData.translatedText
   }))
 
@@ -105,8 +117,9 @@ export async function translateSynopsis(text, signal) {
     }
   }
 
-  if (!translation) translation = await translateWithMyMemory(cleanedText, signal)
-  if (!translation) throw new Error('A tradução retornou vazia.')
-  cacheTranslation(cleanedText, translation)
-  return translation
+  let usable = usableTranslation(cleanedText, translation)
+  if (!usable) usable = usableTranslation(cleanedText, await translateWithMyMemory(cleanedText, signal))
+  if (!usable) throw new Error('A tradução em português não está disponível.')
+  cacheTranslation(cleanedText, usable)
+  return usable
 }

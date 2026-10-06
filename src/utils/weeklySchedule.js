@@ -43,9 +43,11 @@ export function scheduleIdentity(item) {
 
 function scheduleIdentityKeys(item) {
   const episode = item.episodeNumber || ''
+  const coverId = String(item.coverImage || '').match(/bx(\d+)-/i)?.[1]
   return [
-    item.anilistId ? `anilist:${item.anilistId}` : null,
-    item.malId ? `mal:${item.malId}` : null,
+    item.anilistId ? `anilist:${item.anilistId}:ep:${episode}` : null,
+    item.malId ? `mal:${item.malId}:ep:${episode}` : null,
+    coverId ? `cover:${coverId}:ep:${episode}` : null,
     ...[item.title, item.titleEnglish, item.titleRomaji, item.titleNative]
       .filter(Boolean)
       .flatMap((title) => {
@@ -60,16 +62,19 @@ function scheduleIdentityKeys(item) {
 export function scheduleConfidence(items) {
   const timed = items.filter((item) => item.airingAt)
   if (!timed.length) return 'estimated'
-  const primary = items.find((item) => item.source === 'animeschedule' && !item.timeEstimated)
-  if (primary) {
-    const disagreement = timed.some((item) => Math.abs(new Date(item.airingAt) - new Date(primary.airingAt)) > 10 * 60 * 1000)
-    return disagreement ? 'conflicting' : timed.length > 1 ? 'corroborated' : 'confirmed'
-  }
-  if (timed.length >= 2) {
-    const first = new Date(timed[0].airingAt).getTime()
-    return timed.some((item) => Math.abs(new Date(item.airingAt).getTime() - first) > 10 * 60 * 1000) ? 'conflicting' : 'corroborated'
-  }
-  return timed[0].timeEstimated ? 'estimated' : 'confirmed'
+  const confirmed = timed.filter((item) => !item.timeEstimated)
+  if (!confirmed.length) return 'estimated'
+  const first = new Date(confirmed[0].airingAt).getTime()
+  if (confirmed.some((item) => Math.abs(new Date(item.airingAt).getTime() - first) > 10 * 60 * 1000)) return 'conflicting'
+  return confirmed.length > 1 ? 'corroborated' : 'confirmed'
+}
+
+function coverQuality(url) {
+  if (!url) return -1
+  if (/\/cover\/large\/|\b(?:large|high)[._-]/i.test(url)) return 3
+  if (/\/cover\/small\/|\b(?:small|thumb|low)[._-]/i.test(url)) return 0
+  if (/\/cover\/medium\/|\bmedium[._-]/i.test(url)) return 1
+  return 2
 }
 
 export function mergeScheduleSources(sourceLists, timezone = SCHEDULE_TIMEZONE) {
@@ -94,16 +99,18 @@ export function mergeScheduleSources(sourceLists, timezone = SCHEDULE_TIMEZONE) 
   })
   const merged = groups.filter(Boolean).map((items) => {
     const ordered = [...items].sort((a, b) => ['animeschedule', 'tsuzuki', 'anilist'].indexOf(a.source) - ['animeschedule', 'tsuzuki', 'anilist'].indexOf(b.source))
-    const selected = ordered.find((item) => item.airingAt) || ordered[0]
+    const selected = ordered.find((item) => item.airingAt && !item.timeEstimated) || ordered.find((item) => item.airingAt) || ordered[0]
     const streams = ordered.find((item) => item.streams?.length)?.streams || []
+    const coverImage = [...ordered].sort((a, b) => coverQuality(b.coverImage) - coverQuality(a.coverImage)).find((item) => item.coverImage)?.coverImage || null
     const platform = ordered.find((item) => item.platform)?.platform || null
     const confidence = scheduleConfidence(items)
     const fields = getLocalScheduleFields(selected.airingAt, timezone)
     const canonicalAniListId = selected.anilistId || ordered.find((item) => item.anilistId)?.anilistId || null
     const canonicalMalId = selected.malId || ordered.find((item) => item.malId)?.malId || null
     return {
-      ...selected, anilistId: canonicalAniListId, malId: canonicalMalId, ...fields, id: canonicalAniListId ? `anilist:${canonicalAniListId}` : canonicalMalId ? `mal:${canonicalMalId}` : scheduleIdentity(selected), streams, platform,
+      ...selected, anilistId: canonicalAniListId, malId: canonicalMalId, coverImage, ...fields, id: `${canonicalAniListId ? `anilist:${canonicalAniListId}` : canonicalMalId ? `mal:${canonicalMalId}` : scheduleIdentity(selected)}:ep:${selected.episodeNumber || ''}`, streams, platform,
       timingConfidence: confidence,
+      dateConflict: confidence === 'conflicting' && items.filter((item) => item.airingAt && !item.timeEstimated).some((item) => getLocalScheduleFields(item.airingAt, timezone).localDate !== fields.localDate),
       scheduleSources: items.map((item) => ({ name: item.source, airingAt: item.airingAt, estimated: Boolean(item.timeEstimated) })),
       status: selected.status || 'RELEASING',
     }
@@ -115,10 +122,9 @@ export function mergeScheduleSources(sourceLists, timezone = SCHEDULE_TIMEZONE) 
   const unique = new Map()
   for (const item of merged) {
     const imageId = String(item.coverImage || '').match(/bx(\d+)-/i)?.[1]
-    const timeBucket = item.airingAt ? Math.round(new Date(item.airingAt).getTime() / (10 * 60 * 1000)) : 'unknown'
     const key = item.anilistId ? `anilist:${item.anilistId}:ep:${item.episodeNumber || ''}`
       : item.malId ? `mal:${item.malId}:ep:${item.episodeNumber || ''}`
-        : imageId ? `cover:${imageId}:ep:${item.episodeNumber || ''}:at:${timeBucket}`
+        : imageId ? `cover:${imageId}:ep:${item.episodeNumber || ''}`
           : null
     if (!key) {
       unique.set(`fallback:${item.id}`, item)
@@ -144,9 +150,9 @@ export function getTemporalStatus(item, now = new Date()) {
   return 'aired'
 }
 
-export function detectScheduleChanges(items) {
+export function detectScheduleChanges(items, weekKey = 'current') {
   try {
-    const key = 'anical:weekly-schedule:last:v1'
+    const key = `anical:weekly-schedule:last:v2:${weekKey}`
     const previous = JSON.parse(localStorage.getItem(key) || '{}')
     const next = {}
     const enriched = items.map((item) => {

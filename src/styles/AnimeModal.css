@@ -251,6 +251,9 @@
 }
 
 .modal__schedule-info { color: var(--text-muted); font-size: .76rem; line-height: 1.65; }
+.modal__original-synopsis { margin-top: .5rem; color: var(--text-muted); font-size: .78rem; line-height: 1.55; }
+.modal__original-synopsis summary { color: var(--accent-gold); cursor: pointer; }
+.modal__original-synopsis p { margin-top: .5rem; }
 .modal__schedule-info p + p { margin-top: .3rem; }
 .modal__schedule-info strong { color: var(--text-primary); }
 

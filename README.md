@@ -9,6 +9,8 @@ Aplicação web para acompanhar os lançamentos semanais de animes e visualizar 
 ## 📌 Funcionalidades
 
 - 📅 **Calendário semanal** — visualize os animes organizados por dia da semana com horário de lançamento
+- 🗓 **Minha semana** — veja só os episódios dos animes acompanhados, o próximo lançamento e marque o progresso em um toque
+- 🔎 **Conferência da agenda** — reúne fontes duplicadas, prioriza capas maiores e sinaliza datas ou horários divergentes
 - 🎌 **Grade da temporada** — listagem completa dos animes em exibição na temporada atual
 - ⭐ **Favoritos privados** — salve favoritos na sua conta
 - 👁 **Progresso por episódio** — marque exatamente os episódios assistidos

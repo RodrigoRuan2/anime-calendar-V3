@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getAniListDetails } from '../services/aniListApi'
-import { translateSynopsis } from '../services/translationApi'
+import { cleanSynopsis, translateSynopsis } from '../services/translationApi'
 import '../styles/AnimeModal.css'
 
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
@@ -46,7 +46,7 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onTogg
           const translatedDescription = await translateSynopsis(data.description, controller.signal)
           return { ...data, description: translatedDescription }
         } catch {
-          return data
+          return { ...data, description: null, untranslatedDescription: cleanSynopsis(data.description) }
         }
       })
       .then((data) => setDetails(data))
@@ -70,7 +70,7 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onTogg
 
   const title      = details?.title?.romaji || details?.title?.english || anime.title || '—'
   const titleJp    = details?.title?.native || ''
-  const synopsis   = details?.description || 'Sem sinopse disponível.'
+  const synopsis   = details?.description || (details?.untranslatedDescription ? 'Tradução em português indisponível.' : 'Sem sinopse disponível.')
   const score      = details?.averageScore
   const episodes   = details?.episodes
   const status_str = details?.status || anime.status || ''
@@ -139,6 +139,7 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onTogg
                 <>
                   <p className="modal__synopsis-label">Sinopse</p>
                   <p className="modal__synopsis">{synopsis}</p>
+                  {details?.untranslatedDescription && <details className="modal__original-synopsis"><summary>Ver sinopse original</summary><p>{details.untranslatedDescription}</p></details>}
                 </>
               )}
 
@@ -150,7 +151,12 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onTogg
                     {anime.episodeNumber && <p><strong>Próximo episódio:</strong> EP {anime.episodeNumber}</p>}
                     {anime.localDate && <p><strong>Data e horário:</strong> {new Date(anime.airingAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'long', day: '2-digit', month: 'long' })} · {anime.localTime || 'a confirmar'} BRT</p>}
                     {anime.platform && <p><strong>Plataforma:</strong> {anime.platform}</p>}
-                    {anime.scheduleSources?.length > 0 && <p><strong>Fontes:</strong> {anime.scheduleSources.map((source) => source.name).join(' + ')}</p>}
+                    {anime.timingConfidence === 'conflicting' && <p><strong>Atenção:</strong> as fontes divergem. Exibimos o horário da fonte prioritária; confirme antes de se programar.</p>}
+                    {anime.scheduleSources?.length > 0 && <p><strong>Fontes:</strong> {anime.scheduleSources.map((source) => {
+                      const date = source.airingAt ? new Date(source.airingAt) : null
+                      const when = date && !Number.isNaN(date.getTime()) ? date.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'sem horário'
+                      return `${source.name}: ${when}${source.estimated ? ' (estimado)' : ''}`
+                    }).join(' · ')}</p>}
                   </section>
                 </>
               )}

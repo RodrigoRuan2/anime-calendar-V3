@@ -170,7 +170,7 @@ export async function getWeeklyTimetable(weekOffset = 0, signal) {
 
 export async function getAggregatedWeeklySchedule({ weekOffset = 0, timezone = SCHEDULE_TIMEZONE, forceRefresh = false, onUpdate, signal } = {}) {
   const range = getWeekRange(weekOffset, timezone)
-  const cacheKey = `anical:weekly:v7:${range.startDate}:${timezone}`
+  const cacheKey = `anical:weekly:v8:${range.startDate}:${timezone}`
   const cached = readSnapshot(cacheKey, WEEKLY_STALE_MS)
   const freshFor = cached?.data?.partial ? 2 * 60 * 1000 : WEEKLY_CACHE_TTL_MS
   if (cached && !forceRefresh && cached.age < freshFor) {
@@ -217,7 +217,7 @@ export async function getAggregatedWeeklySchedule({ weekOffset = 0, timezone = S
   }
 
   const data = {
-    items: detectScheduleChanges(mergeScheduleSources(lists, timezone)), range,
+    items: detectScheduleChanges(mergeScheduleSources(lists, timezone), range.startDate), range,
     partial: states.includes('rejected') || (weekOffset === 0 && !SUPABASE_URL),
     sourceStatus: Object.fromEntries(sources.map((source, index) => [source.name, states[index] === 'fulfilled'])),
     updatedAt: new Date().toISOString(), updating: false, stale: false,

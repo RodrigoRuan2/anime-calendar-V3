@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { getSeasonForDate, getReleaseLabel, getSeasonLabel, shiftSeason } from '../src/utils/season.js'
 import { combineSeasonSources } from '../src/services/seasonCatalogApi.js'
 import { getAnimeKey } from '../src/utils/animeKey.js'
-import { cleanSynopsis, getSynopsisPreview } from '../src/services/translationApi.js'
+import { cleanSynopsis, getSynopsisPreview, usableTranslation } from '../src/services/translationApi.js'
 
 const fall2026 = { year: 2026, season: 'fall' }
 
@@ -70,5 +70,13 @@ test('chave de status mantém compatibilidade com MAL normalizado', () => {
 
 test('limpa HTML antes de traduzir a sinopse exibida no card', () => {
   assert.equal(cleanSynopsis('The <i>second</i><br>part &amp; more.'), 'The second part & more.')
+  assert.equal(cleanSynopsis('The &lt;i&gt;second&lt;/i&gt; part.'), 'The second part.')
   assert.equal(getSynopsisPreview('A'.repeat(440)).endsWith('…'), true)
+})
+
+test('não aceita resposta ainda em inglês ou mensagem de erro como tradução', () => {
+  const english = 'The second part of the story follows the hero and his friends.'
+  assert.equal(usableTranslation(english, english), null)
+  assert.equal(usableTranslation(english, 'MyMemory WARNING: quota exceeded'), null)
+  assert.equal(usableTranslation(english, 'A segunda parte da história acompanha o herói e seus amigos.'), 'A segunda parte da história acompanha o herói e seus amigos.')
 })

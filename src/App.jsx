@@ -98,6 +98,9 @@ export default function App() {
               weekOffset={weekOffset}
               setWeekOffset={setWeekOffset}
               onAnimeClick={setSelectedAnime}
+              user={user}
+              libraryLoading={libraryLoading}
+              onSignIn={() => setAuthOpen(true)}
             />
           )}
 
