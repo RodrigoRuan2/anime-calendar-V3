@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import AnimeCard from './AnimeCard'
 import { DAY_KEYS, getLocalScheduleFields, getTemporalStatus, SCHEDULE_TIMEZONE } from '../utils/weeklySchedule'
 import { getMyWeekSummary } from '../utils/myWeek'
+import { genreLabel, genreOptions, matchesGenreAndScore, SCORE_OPTIONS } from '../utils/animeFilters'
 import '../styles/Calendar.css'
 
 const DAYS = [
@@ -25,6 +26,8 @@ export default function Calendar({ schedule, items = [], loading, error, partial
   const [view, setView] = useState('all')
   const [platform, setPlatform] = useState('all')
   const [query, setQuery] = useState('')
+  const [genre, setGenre] = useState('all')
+  const [score, setScore] = useState('all')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const daySelectorRef = useRef(null)
   useEffect(() => {
@@ -43,8 +46,11 @@ export default function Calendar({ schedule, items = [], loading, error, partial
     })
   }, [range])
   const platforms = useMemo(() => [...new Set(items.map((item) => item.platform).filter(Boolean))].sort(), [items])
-  const myWeek = useMemo(() => getMyWeekSummary(items, getStatus, now), [items, getStatus, now])
+  const genres = useMemo(() => genreOptions(items), [items])
+  const categoryItems = useMemo(() => items.filter((anime) => matchesGenreAndScore(anime, genre, score)), [items, genre, score])
+  const myWeek = useMemo(() => getMyWeekSummary(categoryItems, getStatus, now), [categoryItems, getStatus, now])
   const visibleItems = (schedule[selectedDay] || []).filter((anime) => {
+    if (!matchesGenreAndScore(anime, genre, score)) return false
     const status = getStatus(anime)
     const text = [anime.title, anime.titleEnglish, anime.titleRomaji].filter(Boolean).join(' ').toLowerCase()
     if (filter === 'watching' && !status.watching) return false
@@ -53,8 +59,8 @@ export default function Calendar({ schedule, items = [], loading, error, partial
     return !query || text.includes(query.toLowerCase())
   })
   const selected = weekDays.find((day) => day.key === selectedDay) || weekDays[0]
-  const resetToday = () => { setWeekOffset(0); setSelectedDay(todayKey); setFilter('all') }
-  const shiftWeek = (direction) => setWeekOffset((value) => value + direction)
+  const resetToday = () => { setWeekOffset(0); setSelectedDay(todayKey); setFilter('all'); setGenre('all'); setScore('all') }
+  const shiftWeek = (direction) => { setWeekOffset((value) => value + direction); setGenre('all'); setScore('all') }
 
   if (loading) return <div className="calendar-status"><div className="loader" /><p>Atualizando calendário...</p></div>
   if (error && !items.length) return <div className="calendar-status calendar-status--error"><p>⚠️ {error}</p><button onClick={refresh}>Tentar novamente</button></div>
@@ -79,6 +85,11 @@ export default function Calendar({ schedule, items = [], loading, error, partial
         <button className={view === 'mine' ? 'active' : ''} aria-pressed={view === 'mine'} onClick={() => setView('mine')}>Minha semana</button>
       </div>
 
+      <div className="weekly-category-filters" aria-label="Filtrar por gênero e nota">
+        <label>Gênero<select value={genre} onChange={(event) => setGenre(event.target.value)}><option value="all">Todos os gêneros</option>{genres.map((value) => <option key={value} value={value}>{genreLabel(value)}</option>)}</select></label>
+        <label>Nota<select value={score} onChange={(event) => setScore(event.target.value)}>{SCORE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+      </div>
+
       {view === 'mine' ? (
         !user ? <div className="my-week-empty"><h3>Sua semana, do seu jeito</h3><p>Entre para ver somente os próximos episódios dos animes que você acompanha.</p><button onClick={onSignIn}>Entrar na minha conta</button></div>
           : libraryLoading ? <div className="calendar-status"><div className="loader" /><p>Carregando sua lista...</p></div>
@@ -87,7 +98,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
                 <div><p className="my-week__eyebrow">Sua programação</p><h3>{myWeek.followed.length} {myWeek.followed.length === 1 ? 'episódio na semana' : 'episódios na semana'}</h3><p>Somente os animes que você acompanha.</p></div>
                 {myWeek.next && <div className="my-week__next"><span>PRÓXIMO EPISÓDIO</span><strong>{myWeek.next.title}</strong><small>EP {myWeek.next.episodeNumber || '—'} · {new Date(myWeek.next.airingAt).toLocaleDateString('pt-BR', { timeZone: SCHEDULE_TIMEZONE, weekday: 'short', day: 'numeric', month: 'short' })} às {myWeek.next.localTime || 'horário a confirmar'} BRT</small></div>}
               </div>
-              {!myWeek.followed.length ? <div className="my-week-empty"><h3>Nenhum anime acompanhado nesta semana</h3><p>Marque “Acompanhar” em um anime da agenda ou da temporada para vê-lo aqui.</p><button onClick={() => setView('all')}>Explorar agenda</button></div>
+              {!myWeek.followed.length ? <div className="my-week-empty"><h3>Nenhum anime encontrado nesta semana</h3><p>{genre !== 'all' || score !== 'all' ? 'Tente outro gênero ou faixa de nota.' : 'Marque “Acompanhar” em um anime da agenda ou da temporada para vê-lo aqui.'}</p><button onClick={() => { setGenre('all'); setScore('all'); setView('all') }}>Explorar agenda</button></div>
                 : weekDays.map((day) => {
                   const dayItems = myWeek.followed.filter((anime) => anime.weekday === day.key)
                   if (!dayItems.length) return null
@@ -98,7 +109,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
 
       <div className="day-selector" role="tablist" aria-label="Dias da semana" ref={daySelectorRef}>
         {weekDays.map((day) => {
-          const count = schedule[day.key]?.length || 0
+          const count = (schedule[day.key] || []).filter((anime) => matchesGenreAndScore(anime, genre, score)).length
           const isToday = weekOffset === 0 && day.key === todayKey
           return <button key={day.key} role="tab" aria-selected={selectedDay === day.key} className={`day-selector__btn ${selectedDay === day.key ? 'day-selector__btn--active' : ''} ${isToday ? 'day-selector__btn--today' : ''}`} onClick={() => setSelectedDay(day.key)}>
             <span className="day-selector__short">{day.short}</span><span className="day-selector__date">{day.date}</span><span className="day-selector__count">{isToday ? 'HOJE' : `${count}`}</span>
@@ -117,7 +128,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
           <button className={filter === 'all' ? 'active' : ''} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>Todos</button>
           <button className={filter === 'library' ? 'active' : ''} aria-pressed={filter === 'library'} onClick={() => setFilter('library')}>Minha lista</button>
         </div>
-        <button className={`weekly-mobile-filter-toggle ${filtersOpen || !['all', 'library'].includes(filter) || platform !== 'all' || query ? 'active' : ''}`} aria-expanded={filtersOpen} aria-controls="weekly-mobile-filters" onClick={() => setFiltersOpen((value) => !value)}>☷ Filtros</button>
+        <button className={`weekly-mobile-filter-toggle ${filtersOpen || !['all', 'library'].includes(filter) || platform !== 'all' || query || genre !== 'all' || score !== 'all' ? 'active' : ''}`} aria-expanded={filtersOpen} aria-controls="weekly-mobile-filters" onClick={() => setFiltersOpen((value) => !value)}>☷ Filtros</button>
       </div>
       {filtersOpen && <div className="weekly-mobile-filters" id="weekly-mobile-filters">
         <label>Mostrar<select value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">Todos</option><option value="library">Minha lista</option><option value="watching">Assistindo</option></select></label>
@@ -127,7 +138,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
       </div>}
 
       <div className="day-view__header"><h3 className="day-view__name">{selected.label}, {selected.date} {weekOffset === 0 && selectedDay === todayKey && <span className="day-view__today-tag">Hoje</span>}</h3><span className="day-view__date">{visibleItems.length} {visibleItems.length === 1 ? 'episódio' : 'episódios'}</span></div>
-      {visibleItems.length === 0 ? <p className="day-view__empty">{filter === 'library' ? 'Nenhum anime da sua lista aparece neste dia.' : 'Não há episódios conhecidos para este dia.'}</p> : <div className="day-grid">{visibleItems.map((anime) => <AnimeCard key={anime.id} anime={anime} status={getStatus(anime)} onToggle={onToggle} onFavorite={onFavorite} onClick={onAnimeClick} temporalStatus={getTemporalStatus(anime, now)} />)}</div>}
+      {visibleItems.length === 0 ? <p className="day-view__empty">{genre !== 'all' || score !== 'all' ? 'Nenhum episódio corresponde ao gênero e à nota escolhidos neste dia.' : filter === 'library' ? 'Nenhum anime da sua lista aparece neste dia.' : 'Não há episódios conhecidos para este dia.'}</p> : <div className="day-grid">{visibleItems.map((anime) => <AnimeCard key={anime.id} anime={anime} status={getStatus(anime)} onToggle={onToggle} onFavorite={onFavorite} onClick={onAnimeClick} temporalStatus={getTemporalStatus(anime, now)} />)}</div>}
       </>}
     </section>
   )

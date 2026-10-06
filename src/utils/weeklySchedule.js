@@ -103,12 +103,14 @@ export function mergeScheduleSources(sourceLists, timezone = SCHEDULE_TIMEZONE) 
     const streams = ordered.find((item) => item.streams?.length)?.streams || []
     const coverImage = [...ordered].sort((a, b) => coverQuality(b.coverImage) - coverQuality(a.coverImage)).find((item) => item.coverImage)?.coverImage || null
     const platform = ordered.find((item) => item.platform)?.platform || null
+    const genres = ordered.find((item) => item.genres?.length)?.genres || []
+    const rated = ordered.find((item) => Number(item.score) > 0)
     const confidence = scheduleConfidence(items)
     const fields = getLocalScheduleFields(selected.airingAt, timezone)
     const canonicalAniListId = selected.anilistId || ordered.find((item) => item.anilistId)?.anilistId || null
     const canonicalMalId = selected.malId || ordered.find((item) => item.malId)?.malId || null
     return {
-      ...selected, anilistId: canonicalAniListId, malId: canonicalMalId, coverImage, ...fields, id: `${canonicalAniListId ? `anilist:${canonicalAniListId}` : canonicalMalId ? `mal:${canonicalMalId}` : scheduleIdentity(selected)}:ep:${selected.episodeNumber || ''}`, streams, platform,
+      ...selected, anilistId: canonicalAniListId, malId: canonicalMalId, coverImage, ...fields, id: `${canonicalAniListId ? `anilist:${canonicalAniListId}` : canonicalMalId ? `mal:${canonicalMalId}` : scheduleIdentity(selected)}:ep:${selected.episodeNumber || ''}`, streams, platform, genres, score: rated?.score || null, scoreSource: rated?.scoreSource || null,
       timingConfidence: confidence,
       dateConflict: confidence === 'conflicting' && items.filter((item) => item.airingAt && !item.timeEstimated).some((item) => getLocalScheduleFields(item.airingAt, timezone).localDate !== fields.localDate),
       scheduleSources: items.map((item) => ({ name: item.source, airingAt: item.airingAt, estimated: Boolean(item.timeEstimated) })),

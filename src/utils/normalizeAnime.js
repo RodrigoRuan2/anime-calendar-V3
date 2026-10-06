@@ -46,6 +46,8 @@ export function normalizeAniListAnime(media, targetSeason) {
     episodes: media.episodes || null,
     startDate,
     genres: media.genres || [],
+    score: media.averageScore ? media.averageScore / 10 : null,
+    scoreSource: media.averageScore ? 'AniList' : null,
     studios: media.studios?.nodes?.map((studio) => studio.name) || [],
     description: media.description || null,
     trailer: media.trailer?.site && media.trailer?.id ? { site: media.trailer.site, id: media.trailer.id } : null,
@@ -87,6 +89,7 @@ export function normalizeJikanAnime(anime, targetSeason) {
     schedule: null,
     streams: [],
     score: anime.score || null,
+    scoreSource: anime.score ? 'MyAnimeList' : null,
     releaseType: getReleaseType(startDate, targetSeason),
   }
   return { ...normalized, releaseConfirmation: getReleaseConfirmation(normalized, targetSeason) }
@@ -131,6 +134,7 @@ export function mergeAnimeCatalogs(animeLists, targetSeason) {
       description: existing.description || anime.description,
       trailer: existing.trailer || anime.trailer,
       score: existing.score || anime.score,
+      scoreSource: existing.score ? existing.scoreSource : anime.scoreSource,
       genres: existing.genres?.length ? existing.genres : anime.genres,
       studios: existing.studios?.length ? existing.studios : anime.studios,
       id: existing.anilistId ? `anilist:${existing.anilistId}` : `mal:${existing.malId || anime.malId}`,

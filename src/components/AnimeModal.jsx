@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAniListDetails } from '../services/aniListApi'
 import { cleanSynopsis, translateSynopsis } from '../services/translationApi'
+import { formatScore, genreLabel } from '../utils/animeFilters'
 import '../styles/AnimeModal.css'
 
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
@@ -71,7 +72,7 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
   const title      = details?.title?.romaji || details?.title?.english || anime.title || '—'
   const titleJp    = details?.title?.native || ''
   const synopsis   = details?.description || (details?.untranslatedDescription ? 'Tradução em português indisponível.' : 'Sem sinopse disponível.')
-  const score      = details?.averageScore
+  const score      = formatScore(details?.averageScore ? details.averageScore / 10 : anime.score)
   const episodes   = details?.episodes
   const status_str = details?.status || anime.status || ''
   const type       = details?.format || ''
@@ -111,7 +112,7 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
 
               <div className="modal__stats">
                 {score && (
-                  <span className="modal__stat modal__stat--score">⭐ {score}</span>
+                  <span className="modal__stat modal__stat--score">⭐ {score}/10</span>
                 )}
                 {isAiring && (
                   <span className="modal__stat modal__stat--airing">● Em exibição</span>
@@ -124,7 +125,7 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
               {genres.length > 0 && (
                 <div className="modal__genres">
                   {genres.map((genre) => (
-                    <span key={genre} className="modal__genre">{genre}</span>
+                    <span key={genre} className="modal__genre">{genreLabel(genre)}</span>
                   ))}
                 </div>
               )}

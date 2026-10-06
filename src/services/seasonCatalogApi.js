@@ -18,7 +18,7 @@ const ANILIST_SEASON_QUERY = `query ($page: Int!, $season: MediaSeason, $seasonY
     media(type: ANIME, season: $season, seasonYear: $seasonYear, sort: POPULARITY_DESC) {
       id idMal title { romaji english native } coverImage { large medium } bannerImage
       season seasonYear format status episodes startDate { year month day }
-      description(asHtml: false) genres source trailer { id site }
+      description(asHtml: false) genres averageScore source trailer { id site }
       studios(isMain: true) { nodes { name } } relations { edges { relationType } }
     }
   }
@@ -68,7 +68,7 @@ export async function getSeasonAnime({ year, season, page = 1, onUpdate, signal,
   const targetSeason = { year, season }
   const current = getSeasonForDate()
   const isCurrent = current.year === year && current.season === season
-  const cacheKey = `anical:season-catalog:v1:${year}:${season}`
+  const cacheKey = `anical:season-catalog:v2:${year}:${season}`
   const cached = readSnapshot(cacheKey, isCurrent ? CURRENT_STALE_TTL : FUTURE_STALE_TTL)
   const ttl = cached?.data?.sourceStatus?.aniList === 'ok' && cached?.data?.sourceStatus?.jikan === 'ok'
     ? isCurrent ? CURRENT_CACHE_TTL : FUTURE_CACHE_TTL

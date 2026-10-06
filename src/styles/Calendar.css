@@ -22,6 +22,10 @@
 .weekly-view-switch button { min-height: 40px; padding: .55rem .85rem; border: 0; border-radius: 9px; background: transparent; color: var(--text-muted); font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; }
 .weekly-view-switch button.active { background: rgba(200,144,26,.16); color: #f2be57; }
 .weekly-view-switch button:focus-visible, .my-week-empty button:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+.weekly-category-filters { display: flex; flex-wrap: wrap; gap: .7rem; }
+.weekly-category-filters label { display: grid; gap: .3rem; min-width: min(200px, 100%); color: var(--text-muted); font-size: .75rem; font-weight: 700; }
+.weekly-category-filters select { width: 100%; min-height: 44px; padding: .55rem .7rem; border: 1px solid var(--border-hover); border-radius: 9px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: .84rem; }
+.weekly-category-filters select:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
 .my-week { display: grid; gap: 1.6rem; }
 .my-week__summary { display: flex; align-items: stretch; justify-content: space-between; gap: 1rem; padding: 1.1rem 1.2rem; border: 1px solid var(--border-hover); border-radius: 14px; background: var(--bg-card); }
 .my-week__eyebrow, .my-week__next span { color: var(--accent-gold); font-size: .65rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
@@ -334,6 +338,9 @@
   .calendar-container { gap: 1rem; }
   .weekly-view-switch { display: flex; width: 100%; }
   .weekly-view-switch button { flex: 1; min-height: 44px; padding: .45rem .3rem; font-size: .78rem; }
+  .weekly-category-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+  .weekly-category-filters label { min-width: 0; }
+  .weekly-category-filters select { min-width: 0; font-size: .78rem; }
   .my-week { gap: 1.25rem; }
   .my-week__summary { flex-direction: column; padding: .9rem; }
   .my-week__next { width: 100%; padding: .8rem 0 0; border-top: 1px solid var(--border-hover); border-left: 0; }

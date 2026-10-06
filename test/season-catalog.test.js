@@ -14,7 +14,7 @@ function aniListAnime(overrides = {}) {
     title: { romaji: 'Exemplo Anime', english: 'Example Anime' },
     coverImage: { large: 'https://example.test/poster.jpg' },
     season: 'FALL', seasonYear: 2026, format: 'TV', status: 'NOT_YET_RELEASED',
-    startDate: { year: 2026, month: 10, day: 5 }, genres: [], studios: { nodes: [] }, relations: { edges: [] },
+    startDate: { year: 2026, month: 10, day: 5 }, genres: ['Action'], averageScore: 84, studios: { nodes: [] }, relations: { edges: [] },
     ...overrides,
   }
 }
@@ -41,8 +41,17 @@ test('combina AniList e Jikan sem duplicar, priorizando dados AniList', () => {
   assert.equal(catalog[0].anilistId, 10)
   assert.equal(catalog[0].malId, 20)
   assert.equal(catalog[0].coverImage, 'https://example.test/poster.jpg')
+  assert.equal(catalog[0].score, 8.4)
+  assert.equal(catalog[0].scoreSource, 'AniList')
+  assert.deepEqual(catalog[0].genres, ['Action'])
   assert.equal(catalog[0].releaseConfirmation, 'CONFIRMED_DATE')
   assert.equal(getReleaseLabel(catalog[0], fall2026), '5 OUT')
+})
+
+test('usa nota da MyAnimeList quando a AniList ainda não avaliou', () => {
+  const catalog = combineSeasonSources({ aniList: [aniListAnime({ averageScore: null })], jikan: [jikanAnime({ score: 7.5 })] }, fall2026)
+  assert.equal(catalog[0].score, 7.5)
+  assert.equal(catalog[0].scoreSource, 'MyAnimeList')
 })
 
 test('mantém catálogo quando uma fonte ou agenda não retorna dados', () => {

@@ -15,11 +15,14 @@ test('semana começa na segunda e atravessa ano corretamente', () => {
   assert.equal(getWeekRange(1, 'America/Sao_Paulo', new Date('2026-12-31T15:00:00.000Z')).startDate, '2027-01-04')
 })
 
-test('merge deduplica fontes e prioriza AnimeSchedule', () => {
-  const result = mergeScheduleSources([[{ ...base, source: 'animeschedule', airingAt: '2026-09-14T21:00:00Z', streams: [{ name: 'Crunchyroll' }] }], [{ ...base, source: 'tsuzuki', airingAt: '2026-09-14T21:05:00Z', platform: 'Crunchyroll' }], [{ ...base, source: 'anilist', airingAt: '2026-09-14T21:00:00Z' }]])
+test('merge deduplica fontes, prioriza AnimeSchedule e incorpora gêneros e nota', () => {
+  const result = mergeScheduleSources([[{ ...base, source: 'animeschedule', airingAt: '2026-09-14T21:00:00Z', streams: [{ name: 'Crunchyroll' }] }], [{ ...base, source: 'tsuzuki', airingAt: '2026-09-14T21:05:00Z', platform: 'Crunchyroll' }], [{ ...base, source: 'anilist', airingAt: '2026-09-14T21:00:00Z', genres: ['Action'], score: 8.2, scoreSource: 'AniList' }]])
   assert.equal(result.length, 1)
   assert.equal(result[0].timingConfidence, 'corroborated')
   assert.equal(result[0].streams[0].name, 'Crunchyroll')
+  assert.deepEqual(result[0].genres, ['Action'])
+  assert.equal(result[0].score, 8.2)
+  assert.equal(result[0].scoreSource, 'AniList')
 })
 
 test('AniList conecta títulos romaji e inglês entregues por fontes diferentes', () => {

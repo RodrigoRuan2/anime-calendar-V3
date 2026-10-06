@@ -80,6 +80,8 @@ function normalizeAnimeScheduleEpisode(anime) {
     airingAt: anime.episodeDate || null,
     episodeDate: anime.episodeDate || null,
     platform: anime.platformName || null,
+    genres: anime.genres || [],
+    score: anime.score || null,
     streams: anime.streams || [],
     status: anime.status || null,
     source: 'animeschedule',
@@ -92,7 +94,7 @@ const ANILIST_AIRING_QUERY = `query ($page: Int!, $start: Int!, $end: Int!) {
     pageInfo { hasNextPage }
     airingSchedules(airingAt_greater: $start, airingAt_lesser: $end, sort: TIME) {
       airingAt episode
-      media { id idMal title { romaji english native } coverImage { large medium } status format }
+      media { id idMal title { romaji english native } coverImage { large medium } status format genres averageScore }
     }
   }
 }`
@@ -115,6 +117,9 @@ async function getAniListAiringSchedule(range, signal) {
       airingAt: new Date(schedule.airingAt * 1000).toISOString(),
       episodeDate: new Date(schedule.airingAt * 1000).toISOString(),
       status: schedule.media.status,
+      genres: schedule.media.genres || [],
+      score: schedule.media.averageScore ? schedule.media.averageScore / 10 : null,
+      scoreSource: schedule.media.averageScore ? 'AniList' : null,
       streams: [],
       platform: null,
       source: 'anilist',
@@ -170,7 +175,7 @@ export async function getWeeklyTimetable(weekOffset = 0, signal) {
 
 export async function getAggregatedWeeklySchedule({ weekOffset = 0, timezone = SCHEDULE_TIMEZONE, forceRefresh = false, onUpdate, signal } = {}) {
   const range = getWeekRange(weekOffset, timezone)
-  const cacheKey = `anical:weekly:v8:${range.startDate}:${timezone}`
+  const cacheKey = `anical:weekly:v9:${range.startDate}:${timezone}`
   const cached = readSnapshot(cacheKey, WEEKLY_STALE_MS)
   const freshFor = cached?.data?.partial ? 2 * 60 * 1000 : WEEKLY_CACHE_TTL_MS
   if (cached && !forceRefresh && cached.age < freshFor) {

@@ -113,7 +113,7 @@ test('agenda antiga aparece imediatamente enquanto as APIs atualizam', async () 
   globalThis.localStorage = local
   globalThis.sessionStorage = new MemoryStorage()
   const range = getWeekRange()
-  const key = `anical:weekly:v8:${range.startDate}:America/Sao_Paulo`
+  const key = `anical:weekly:v9:${range.startDate}:America/Sao_Paulo`
   local.setItem(key, JSON.stringify({ timestamp: Date.now() - 20 * 60_000, data: {
     items: [{ id: 'cached', title: 'Anime salvo', weekday: 'monday' }], range,
     partial: false, sourceStatus: {}, updatedAt: new Date().toISOString(),

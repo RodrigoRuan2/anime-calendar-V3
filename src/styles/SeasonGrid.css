@@ -121,6 +121,11 @@
 
 .season-sync { color: #d5ad5f; font-size: .75rem; }
 
+.season-refine { display: flex; flex-wrap: wrap; gap: .7rem; }
+.season-refine label { display: grid; gap: .3rem; min-width: min(200px, 100%); color: var(--text-muted); font-size: .75rem; font-weight: 700; }
+.season-refine select { width: 100%; min-height: 44px; padding: .55rem .7rem; border: 1px solid var(--border-hover); border-radius: 9px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: .84rem; }
+.season-refine select:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+
 /* Grid */
 .season-grid {
   display: grid;
@@ -154,6 +159,9 @@
   .season-filter-btn { min-width: 0; min-height: 44px; padding: .45rem .6rem; font-size: .8rem; }
   .season-count { grid-column: 1 / -1; margin: 0; font-size: .8rem; }
   .season-sync { grid-column: 1 / -1; font-size: .78rem; }
+  .season-refine { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+  .season-refine label { min-width: 0; }
+  .season-refine select { min-width: 0; font-size: .78rem; }
   .season-grid { grid-template-columns: minmax(0, 1fr); gap: .8rem; }
 }
 

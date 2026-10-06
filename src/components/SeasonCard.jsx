@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { getReleaseLabel } from '../utils/season'
 import { getSynopsisPreview, translateSynopsis } from '../services/translationApi'
+import { formatScore, genreLabel } from '../utils/animeFilters'
 import '../styles/SeasonCard.css'
 
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
@@ -68,7 +69,8 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
           <div className="season-card__tags">
             {anime.format && <span>{anime.format.replace('_', ' ')}</span>}
             {anime.episodes && <span>{anime.episodes} eps</span>}
-            {anime.genres?.slice(0, 2).map((genre) => <span key={genre}>{genre}</span>)}
+            {formatScore(anime.score) && <span title={`Nota ${anime.scoreSource || 'da comunidade'}`}>★ {formatScore(anime.score)}/10</span>}
+            {anime.genres?.slice(0, 2).map((genre) => <span key={genre}>{genreLabel(genre)}</span>)}
           </div>
           <button className="season-card__details" onClick={(event) => { event.stopPropagation(); onClick?.(anime) }}>Ver detalhes →</button>
           <button className={`season-card__mobile-action ${status.watching ? 'active-watching' : ''}`} aria-pressed={status.watching} onClick={(event) => { event.stopPropagation(); onToggle(anime, 'watching') }}>{status.watching ? '✓ Acompanhando' : '＋ Acompanhar'}</button>
