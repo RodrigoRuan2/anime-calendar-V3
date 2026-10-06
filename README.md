@@ -9,11 +9,10 @@ Aplicação web para acompanhar os lançamentos semanais de animes e visualizar 
 ## 📌 Funcionalidades
 
 - 📅 **Calendário semanal** — visualize os animes organizados por dia da semana com horário de lançamento
-- 🗓 **Minha semana** — veja só os episódios dos animes acompanhados, o próximo lançamento e marque o progresso em um toque
+- 🗓 **Minha semana** — veja só os episódios dos animes acompanhados e o próximo lançamento
 - 🔎 **Conferência da agenda** — reúne fontes duplicadas, prioriza capas maiores e sinaliza datas ou horários divergentes
 - 🎌 **Grade da temporada** — listagem completa dos animes em exibição na temporada atual
 - ⭐ **Favoritos privados** — salve favoritos na sua conta
-- 👁 **Progresso por episódio** — marque exatamente os episódios assistidos
 - 👤 **Conta AniCal** — crie seu usuário e senha para acessar a biblioteca privada
 - 🔁 **Retry automático** — tratamento de rate limit com retry inteligente na API do Jikan
 - 🔒 **Chave de API protegida** — integração segura via Supabase Edge Functions

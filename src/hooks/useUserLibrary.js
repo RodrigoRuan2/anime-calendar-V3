@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { fetchLibrary, removeLibraryItem, setEpisodeWatched, updateLibraryItem, upsertLibraryItem } from '../services/libraryApi'
+import { fetchLibrary, removeLibraryItem, updateLibraryItem, upsertLibraryItem } from '../services/libraryApi'
 import { getAnimeKey } from '../utils/animeKey'
 
-const EMPTY_STATUS = { watching: false, favorite: false, entry: null, watchedEpisodes: [] }
+const EMPTY_STATUS = { watching: false, favorite: false, entry: null }
 
 export function useUserLibrary(user, onSignInRequired) {
   const [entries, setEntries] = useState([])
@@ -25,7 +25,7 @@ export function useUserLibrary(user, onSignInRequired) {
   const getStatus = useCallback((anime) => {
     const entry = entryFor(anime)
     if (!entry) return EMPTY_STATUS
-    return { watching: entry.status === 'assistindo', favorite: entry.is_favorite, entry, watchedEpisodes: entry.user_episode_progress?.map((item) => item.episode_number).sort((a, b) => a - b) || [] }
+    return { watching: entry.status === 'assistindo', favorite: entry.is_favorite, entry }
   }, [entryFor])
 
   const requireUser = useCallback((anime, action) => {
@@ -57,22 +57,8 @@ export function useUserLibrary(user, onSignInRequired) {
     try { replace(entry ? await updateLibraryItem(entry.id, { status }) : await upsertLibraryItem(user.id, anime, { status })); setError(null) } catch (cause) { setError(cause.message) }
   }, [entryFor, replace, requireUser, user])
 
-  const toggleEpisode = useCallback(async (anime, episodeNumber) => {
-    const episode = Number(episodeNumber)
-    if (!Number.isInteger(episode) || episode < 1) return
-    if (!requireUser(anime, { type: 'episode', episodeNumber: episode })) return
-    let entry = entryFor(anime)
-    try {
-      if (!entry) entry = await upsertLibraryItem(user.id, anime, { status: 'assistindo' })
-      const watched = entry.user_episode_progress?.some((item) => item.episode_number === episode)
-      await setEpisodeWatched(user.id, entry.id, episode, !watched)
-      await reload()
-      setError(null)
-    } catch (cause) { setError(cause.message) }
-  }, [entryFor, reload, requireUser, user])
-
   const remove = useCallback(async (entry) => {
     try { await removeLibraryItem(entry.id); setEntries((previous) => previous.filter((item) => item.id !== entry.id)) } catch (cause) { setError(cause.message) }
   }, [])
-  return { entries, loading, error, getStatus, entryFor, toggleWatching, toggleFavorite, setStatus, toggleEpisode, remove, reload }
+  return { entries, loading, error, getStatus, entryFor, toggleWatching, toggleFavorite, setStatus, remove, reload }
 }

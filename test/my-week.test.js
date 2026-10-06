@@ -10,14 +10,13 @@ const items = [
 ]
 
 test('minha semana mostra só acompanhados e destaca próximo episódio', () => {
-  const summary = getMyWeekSummary(items, (anime) => ({ watching: anime.id !== 3, watchedEpisodes: [] }), now)
+  const summary = getMyWeekSummary(items, (anime) => ({ watching: anime.id !== 3 }), now)
   assert.deepEqual(summary.followed.map((anime) => anime.id), [1, 2])
   assert.equal(summary.next.id, 2)
-  assert.equal(summary.pendingCount, 1)
 })
 
-test('episódio assistido não aparece como pendente', () => {
-  const summary = getMyWeekSummary(items, (anime) => ({ watching: anime.id === 1, watchedEpisodes: [4] }), now)
-  assert.equal(summary.pendingCount, 0)
+test('minha semana mantém os acompanhados mesmo depois da exibição', () => {
+  const summary = getMyWeekSummary(items, (anime) => ({ watching: anime.id === 1 }), now)
+  assert.equal(summary.followed.length, 1)
   assert.equal(summary.next, null)
 })

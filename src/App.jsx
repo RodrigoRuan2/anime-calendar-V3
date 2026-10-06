@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Calendar from './components/Calendar'
 import SeasonGrid from './components/SeasonGrid'
 import Movies from './components/Movies'
@@ -11,7 +11,6 @@ import { useAuth } from './hooks/useAuth'
 import { useUserLibrary } from './hooks/useUserLibrary'
 import { useAnimeSchedule } from './hooks/useAnimeSchedule'
 import { readPendingAction, storePendingAction } from './services/authApi'
-import { getAiredWeeklyEpisodes } from './utils/episodeProgress'
 import './styles/App.css'
 
 const TABS = [
@@ -34,9 +33,8 @@ export default function App() {
   }, [])
   const { user } = useAuth()
   const requestSignIn = useCallback((action) => { storePendingAction(action); setAuthOpen(true) }, [])
-  const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, remove } = useUserLibrary(user, requestSignIn)
+  const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, remove } = useUserLibrary(user, requestSignIn)
   const { schedule, items: scheduleItems, range: scheduleRange, loading: scheduleLoading, error: scheduleError, partial: schedulePartial, updating: scheduleUpdating, stale: scheduleStale, updatedAt: scheduleUpdatedAt, now: scheduleNow, refresh: refreshSchedule } = useAnimeSchedule(weekOffset)
-  const weeklyEpisodes = useMemo(() => getAiredWeeklyEpisodes(scheduleItems, scheduleNow), [scheduleItems, scheduleNow])
 
   useEffect(() => {
     if (!user) return undefined
@@ -45,10 +43,9 @@ export default function App() {
       if (!pending?.anime) return
       if (pending.action === 'favorite') toggleFavorite(pending.anime)
       if (pending.action === 'watching') toggleWatching(pending.anime)
-      if (pending.action?.type === 'episode' && pending.action.episodeNumber) toggleEpisode(pending.anime, pending.action.episodeNumber)
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [toggleEpisode, toggleFavorite, toggleWatching, user])
+  }, [toggleFavorite, toggleWatching, user])
 
   return (
     <div className="app">
@@ -92,7 +89,6 @@ export default function App() {
               now={scheduleNow}
               refresh={refreshSchedule}
               onToggle={toggleWatching}
-              onToggleEpisode={toggleEpisode}
               onFavorite={toggleFavorite}
               getStatus={getStatus}
               weekOffset={weekOffset}
@@ -124,7 +120,7 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'library' && user && <Library entries={entries} loading={libraryLoading} weeklyEpisodes={weeklyEpisodes} onStatusChange={setStatus} onFavorite={toggleFavorite} onToggleEpisode={toggleEpisode} onRemove={remove} onAnimeClick={setSelectedAnime} />}
+          {activeTab === 'library' && user && <Library entries={entries} loading={libraryLoading} onStatusChange={setStatus} onFavorite={toggleFavorite} onRemove={remove} onAnimeClick={setSelectedAnime} />}
           {activeTab === 'library' && !user && <div className="library-empty"><strong>Entre para ver sua lista.</strong><button className="account-login" onClick={() => setAuthOpen(true)}>Entrar</button></div>}
           {libraryError && <p className="weekly-notice">Não foi possível sincronizar sua lista: {libraryError}</p>}
         </main>
@@ -138,7 +134,6 @@ export default function App() {
           status={getStatus(selectedAnime)}
           onToggle={toggleWatching}
           onFavorite={toggleFavorite}
-          onToggleEpisode={toggleEpisode}
           onClose={closeModal}
         />
       )}

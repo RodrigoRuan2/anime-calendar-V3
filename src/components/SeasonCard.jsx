@@ -41,7 +41,7 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
         <img src={imageUrl || FALLBACK} alt={anime.title} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = FALLBACK }} />
         <div className="season-card__overlay">
           <button className={`season-card__btn ${status.watching ? 'active-watching' : ''}`} onClick={(event) => { event.stopPropagation(); onToggle(anime, 'watching') }}>
-            {status.watching ? '▶ Assistindo' : '▶ Assistir'}
+            {status.watching ? '✓ Acompanhando' : '＋ Acompanhar'}
           </button>
         </div>
         <div className="season-card__badges">

@@ -218,7 +218,7 @@
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0.85rem;
   /* align-items: stretch (padrão) → todos os cards da fileira ficam com a
-     altura do mais alto, e o botão "Assistir" alinha no rodapé. */
+     altura do mais alto, e as ações se alinham no rodapé. */
   align-items: stretch;
 }
 

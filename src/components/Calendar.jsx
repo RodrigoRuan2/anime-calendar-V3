@@ -18,7 +18,7 @@ function labelForRange(range) {
   return `${date(start)} – ${date(end)}`
 }
 
-export default function Calendar({ schedule, items = [], loading, error, partial, updating, stale, updatedAt, now, refresh, onToggle, onToggleEpisode, onFavorite, getStatus, weekOffset, setWeekOffset, onAnimeClick, range, user, libraryLoading, onSignIn }) {
+export default function Calendar({ schedule, items = [], loading, error, partial, updating, stale, updatedAt, now, refresh, onToggle, onFavorite, getStatus, weekOffset, setWeekOffset, onAnimeClick, range, user, libraryLoading, onSignIn }) {
   const todayKey = getLocalScheduleFields(now, SCHEDULE_TIMEZONE).weekday
   const [selectedDay, setSelectedDay] = useState(todayKey)
   const [filter, setFilter] = useState('all')
@@ -84,14 +84,14 @@ export default function Calendar({ schedule, items = [], loading, error, partial
           : libraryLoading ? <div className="calendar-status"><div className="loader" /><p>Carregando sua lista...</p></div>
             : <div className="my-week">
               <div className="my-week__summary">
-                <div><p className="my-week__eyebrow">Sua programação</p><h3>{myWeek.followed.length} {myWeek.followed.length === 1 ? 'episódio na semana' : 'episódios na semana'}</h3><p>{myWeek.pendingCount} {myWeek.pendingCount === 1 ? 'episódio exibido para marcar' : 'episódios exibidos para marcar'}</p></div>
+                <div><p className="my-week__eyebrow">Sua programação</p><h3>{myWeek.followed.length} {myWeek.followed.length === 1 ? 'episódio na semana' : 'episódios na semana'}</h3><p>Somente os animes que você acompanha.</p></div>
                 {myWeek.next && <div className="my-week__next"><span>PRÓXIMO EPISÓDIO</span><strong>{myWeek.next.title}</strong><small>EP {myWeek.next.episodeNumber || '—'} · {new Date(myWeek.next.airingAt).toLocaleDateString('pt-BR', { timeZone: SCHEDULE_TIMEZONE, weekday: 'short', day: 'numeric', month: 'short' })} às {myWeek.next.localTime || 'horário a confirmar'} BRT</small></div>}
               </div>
               {!myWeek.followed.length ? <div className="my-week-empty"><h3>Nenhum anime acompanhado nesta semana</h3><p>Marque “Acompanhar” em um anime da agenda ou da temporada para vê-lo aqui.</p><button onClick={() => setView('all')}>Explorar agenda</button></div>
                 : weekDays.map((day) => {
                   const dayItems = myWeek.followed.filter((anime) => anime.weekday === day.key)
                   if (!dayItems.length) return null
-                  return <section className="my-week__day" key={day.key}><div className="day-view__header"><h3 className="day-view__name">{day.label}, {day.date}</h3><span className="day-view__date">{dayItems.length} {dayItems.length === 1 ? 'episódio' : 'episódios'}</span></div><div className="day-grid">{dayItems.map((anime) => <AnimeCard key={anime.id} anime={anime} status={getStatus(anime)} onToggle={onToggle} onToggleEpisode={onToggleEpisode} onFavorite={onFavorite} onClick={onAnimeClick} temporalStatus={getTemporalStatus(anime, now)} now={now} />)}</div></section>
+                  return <section className="my-week__day" key={day.key}><div className="day-view__header"><h3 className="day-view__name">{day.label}, {day.date}</h3><span className="day-view__date">{dayItems.length} {dayItems.length === 1 ? 'episódio' : 'episódios'}</span></div><div className="day-grid">{dayItems.map((anime) => <AnimeCard key={anime.id} anime={anime} status={getStatus(anime)} onToggle={onToggle} onFavorite={onFavorite} onClick={onAnimeClick} temporalStatus={getTemporalStatus(anime, now)} />)}</div></section>
                 })}
             </div>
       ) : <>
@@ -127,7 +127,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
       </div>}
 
       <div className="day-view__header"><h3 className="day-view__name">{selected.label}, {selected.date} {weekOffset === 0 && selectedDay === todayKey && <span className="day-view__today-tag">Hoje</span>}</h3><span className="day-view__date">{visibleItems.length} {visibleItems.length === 1 ? 'episódio' : 'episódios'}</span></div>
-      {visibleItems.length === 0 ? <p className="day-view__empty">{filter === 'library' ? 'Nenhum anime da sua lista aparece neste dia.' : 'Não há episódios conhecidos para este dia.'}</p> : <div className="day-grid">{visibleItems.map((anime) => <AnimeCard key={anime.id} anime={anime} status={getStatus(anime)} onToggle={onToggle} onToggleEpisode={onToggleEpisode} onFavorite={onFavorite} onClick={onAnimeClick} temporalStatus={getTemporalStatus(anime, now)} now={now} />)}</div>}
+      {visibleItems.length === 0 ? <p className="day-view__empty">{filter === 'library' ? 'Nenhum anime da sua lista aparece neste dia.' : 'Não há episódios conhecidos para este dia.'}</p> : <div className="day-grid">{visibleItems.map((anime) => <AnimeCard key={anime.id} anime={anime} status={getStatus(anime)} onToggle={onToggle} onFavorite={onFavorite} onClick={onAnimeClick} temporalStatus={getTemporalStatus(anime, now)} />)}</div>}
       </>}
     </section>
   )
