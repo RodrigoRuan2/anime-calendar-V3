@@ -126,19 +126,13 @@
 .season-refine select { width: 100%; min-height: 44px; padding: .55rem .7rem; border: 1px solid var(--border-hover); border-radius: 9px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: .84rem; }
 .season-refine select:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
 
-/* Grid */
-.season-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 860px);
-  justify-content: center;
-  gap: 1.1rem;
-}
-
-@media (max-width: 600px) {
-  .season-grid {
-    grid-template-columns: 1fr;
-  }
-}
+/* Agenda: continuações em exibição, meses da temporada e datas a confirmar. */
+.season-agenda { display: grid; gap: 2rem; }
+.season-agenda__group { display: grid; gap: .85rem; min-width: 0; }
+.season-agenda__heading { display: flex; align-items: baseline; gap: .65rem; padding-bottom: .35rem; border-bottom: 1px solid var(--border); }
+.season-agenda__heading h3 { margin: 0; color: var(--text-primary); font-family: 'Bebas Neue', sans-serif; font-size: 1.55rem; font-weight: 400; letter-spacing: .07em; text-transform: uppercase; }
+.season-agenda__heading span { color: var(--text-muted); font-size: .76rem; }
+.season-agenda__list { display: grid; gap: .7rem; }
 
 .season-empty {
   color: var(--text-muted);
@@ -162,6 +156,9 @@
   .season-refine { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
   .season-refine label { min-width: 0; }
   .season-refine select { min-width: 0; font-size: .78rem; }
-  .season-grid { grid-template-columns: minmax(0, 1fr); gap: .8rem; }
+  .season-agenda { gap: 1.5rem; }
+  .season-agenda__heading { flex-wrap: wrap; gap: .25rem .55rem; }
+  .season-agenda__heading h3 { font-size: 1.4rem; }
+  .season-agenda__list { gap: .6rem; }
 }
 

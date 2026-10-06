@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { getReleaseLabel } from '../utils/season'
+import { seasonAgendaDate } from '../utils/seasonAgenda'
 import { getSynopsisPreview, translateSynopsis } from '../services/translationApi'
 import { formatScore, genreLabel } from '../utils/animeFilters'
 import '../styles/SeasonCard.css'
@@ -15,6 +16,10 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
   const [description, setDescription] = useState(null)
   const [translationFailed, setTranslationFailed] = useState(false)
   const preview = getSynopsisPreview(anime.description)
+  const date = seasonAgendaDate(anime, targetSeason)
+  const releaseText = date.kind === 'day' ? getReleaseLabel(anime, targetSeason)
+    : date.kind === 'month' ? 'Dia a confirmar'
+      : date.kind === 'airing' ? 'Em exibição' : 'Data a confirmar'
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
@@ -37,44 +42,31 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
   }, [preview, visible])
 
   return (
-    <article ref={cardRef} className={`season-card season-card--horizontal ${status.watching ? 'season-card--watching' : ''}`} onClick={onClick ? () => onClick(anime) : undefined}>
-      <div className="season-card__poster">
-        <img src={imageUrl || FALLBACK} alt={anime.title} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = FALLBACK }} />
-        <div className="season-card__overlay">
-          <button className={`season-card__btn ${status.watching ? 'active-watching' : ''}`} onClick={(event) => { event.stopPropagation(); onToggle(anime, 'watching') }}>
-            {status.watching ? '✓ Acompanhando' : '＋ Acompanhar'}
-          </button>
-        </div>
-        <div className="season-card__badges">
-          {anime.releaseType && <span className="badge badge--type">{TYPE_LABEL[anime.releaseType]}</span>}
-        </div>
-        <button className={`season-card__favorite ${status.favorite ? 'active' : ''}`} onClick={(event) => { event.stopPropagation(); onFavorite?.(anime) }} aria-label={status.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>{status.favorite ? '♥' : '♡'}</button>
+    <article ref={cardRef} className={`season-agenda-card ${status.watching ? 'season-agenda-card--watching' : ''}`} onClick={onClick ? () => onClick(anime) : undefined}>
+      <div className="season-agenda-card__date" aria-label={date.kind === 'day' ? `Dia ${date.day}, ${date.weekday}` : releaseText}>
+        <strong>{date.kind === 'day' ? String(date.day).padStart(2, '0') : date.kind === 'airing' ? 'NO' : '—'}</strong>
+        <span>{date.kind === 'day' ? date.weekday : date.kind === 'airing' ? 'AR' : date.kind === 'month' ? 'DIA' : 'DATA'}</span>
       </div>
-
-      <div className="season-card__info">
-        <div className="season-card__heading">
-          <div>
-            <p className="season-card__eyebrow">{getReleaseLabel(anime, targetSeason)}</p>
-            <h3 className="season-card__title"><button className="season-card__open" type="button" onClick={(event) => { event.stopPropagation(); onClick?.(anime) }}>{anime.title}</button></h3>
-            {anime.titleEnglish && anime.titleEnglish !== anime.title && <p className="season-card__title-alt">{anime.titleEnglish}</p>}
-          </div>
-          {status.watching && <span className="season-card__watching">▶ Assistindo</span>}
+      <div className="season-agenda-card__poster">
+        <div className="season-agenda-card__poster-blur" style={{ backgroundImage: `url(${imageUrl || FALLBACK})` }} aria-hidden="true" />
+        <img src={imageUrl || FALLBACK} alt={anime.title} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = FALLBACK }} />
+      </div>
+      <div className="season-agenda-card__info">
+        <p className="season-agenda-card__eyebrow">{TYPE_LABEL[anime.releaseType] || 'Anime'} · {releaseText}</p>
+        <h3 className="season-agenda-card__title"><button type="button" onClick={(event) => { event.stopPropagation(); onClick?.(anime) }}>{anime.title}</button></h3>
+        <p className="season-agenda-card__description">{description || (translationFailed ? 'Sinopse em português indisponível.' : preview ? 'Traduzindo sinopse…' : 'Sinopse ainda não informada.')}</p>
+        <div className="season-agenda-card__tags">
+          {anime.genres?.slice(0, 2).map((genre) => <span key={genre}>{genreLabel(genre)}</span>)}
+          {anime.episodes && <span>{anime.episodes} eps</span>}
         </div>
-
-        <p className="season-card__description">
-          {description || (translationFailed ? 'Sinopse em português indisponível.' : preview ? 'Traduzindo sinopse…' : 'Sinopse ainda não informada.')}
-        </p>
-
-        <div className="season-card__footer">
-          <div className="season-card__tags">
-            {anime.format && <span>{anime.format.replace('_', ' ')}</span>}
-            {anime.episodes && <span>{anime.episodes} eps</span>}
-            {formatScore(anime.score) && <span title={`Nota ${anime.scoreSource || 'da comunidade'}`}>★ {formatScore(anime.score)}/10</span>}
-            {anime.genres?.slice(0, 2).map((genre) => <span key={genre}>{genreLabel(genre)}</span>)}
-          </div>
-          <button className="season-card__details" onClick={(event) => { event.stopPropagation(); onClick?.(anime) }}>Ver detalhes →</button>
-          <button className={`season-card__mobile-action ${status.watching ? 'active-watching' : ''}`} aria-pressed={status.watching} onClick={(event) => { event.stopPropagation(); onToggle(anime, 'watching') }}>{status.watching ? '✓ Acompanhando' : '＋ Acompanhar'}</button>
+      </div>
+      <div className="season-agenda-card__side">
+        <div className="season-agenda-card__side-top">
+          <span className="season-agenda-card__score" title={anime.scoreSource ? `Nota ${anime.scoreSource}` : undefined}>{formatScore(anime.score) ? `★ ${formatScore(anime.score)}/10` : 'Sem nota'}</span>
+          <button className={`season-agenda-card__favorite ${status.favorite ? 'active' : ''}`} type="button" onClick={(event) => { event.stopPropagation(); onFavorite?.(anime) }} aria-label={status.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>{status.favorite ? '♥' : '♡'}</button>
         </div>
+        <button className={`season-agenda-card__follow ${status.watching ? 'active-watching' : ''}`} type="button" aria-pressed={status.watching} onClick={(event) => { event.stopPropagation(); onToggle(anime, 'watching') }}>{status.watching ? '✓ Acompanhando' : '＋ Acompanhar'}</button>
+        <button className="season-agenda-card__details" type="button" onClick={(event) => { event.stopPropagation(); onClick?.(anime) }}>Ver detalhes →</button>
       </div>
     </article>
   )

@@ -1,6 +1,7 @@
 import { useSeasonAnime } from '../hooks/useSeasonAnime'
 import { useState } from 'react'
 import { getSeasonForDate, getSeasonLabel, shiftSeason } from '../utils/season'
+import { groupSeasonAgenda } from '../utils/seasonAgenda'
 import { genreLabel, genreOptions, matchesGenreAndScore, SCORE_OPTIONS } from '../utils/animeFilters'
 import SeasonCard from './SeasonCard'
 import '../styles/SeasonGrid.css'
@@ -34,6 +35,7 @@ export default function SeasonGrid({
     if (activeFilter === 'new') return anime.releaseType === 'new' || anime.releaseType === 'sequel'
     return true
   })
+  const agendaGroups = groupSeasonAgenda(filtered, targetSeason)
   const changeSeason = (direction) => {
     setTargetSeason((current) => shiftSeason(current, direction))
     setGenre('all')
@@ -45,7 +47,7 @@ export default function SeasonGrid({
       <div className="season-header">
         <div className="season-title">
           <h2>{getSeasonLabel(targetSeason)}</h2>
-          <span>Catálogo da temporada</span>
+          <span>Estreias e continuações em ordem de chegada</span>
         </div>
         <div className="season-navigation">
           <button className="season-toggle-btn" onClick={() => changeSeason(-1)} aria-label="Temporada anterior">← Anterior</button>
@@ -82,17 +84,24 @@ export default function SeasonGrid({
       ) : filtered.length === 0 ? (
         <p className="season-empty">Nenhum anime corresponde aos filtros selecionados.</p>
       ) : (
-        <div className="season-grid">
-          {filtered.map((anime) => (
-            <SeasonCard
-              key={anime.id}
-              anime={anime}
-              targetSeason={targetSeason}
-              status={getStatus(anime)}
-              onToggle={onToggle}
-              onFavorite={onFavorite}
-              onClick={onAnimeClick}
-            />
+        <div className="season-agenda">
+          {agendaGroups.map((group) => (
+            <section className="season-agenda__group" key={group.key} aria-label={group.title}>
+              <div className="season-agenda__heading"><h3>{group.title}</h3><span>{group.subtitle}</span></div>
+              <div className="season-agenda__list">
+                {group.animes.map((anime) => (
+                  <SeasonCard
+                    key={anime.id}
+                    anime={anime}
+                    targetSeason={targetSeason}
+                    status={getStatus(anime)}
+                    onToggle={onToggle}
+                    onFavorite={onFavorite}
+                    onClick={onAnimeClick}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}
