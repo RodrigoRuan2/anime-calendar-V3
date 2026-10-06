@@ -6,6 +6,7 @@ import AnimeModal from './components/AnimeModal'
 import AuthModal from './components/AuthModal'
 import AccountMenu from './components/AccountMenu'
 import Library from './components/Library'
+import MobileNav from './components/MobileNav'
 import { useAuth } from './hooks/useAuth'
 import { useUserLibrary } from './hooks/useUserLibrary'
 import { useAnimeSchedule } from './hooks/useAnimeSchedule'
@@ -25,6 +26,10 @@ export default function App() {
   const [selectedAnime, setSelectedAnime] = useState(null)
   const [authOpen, setAuthOpen] = useState(false)
   const closeModal = useCallback(() => setSelectedAnime(null), [])
+  const selectTab = useCallback((tab) => {
+    setActiveTab(tab)
+    if (window.matchMedia('(max-width: 640px)').matches) window.scrollTo(0, 0)
+  }, [])
   const { user } = useAuth()
   const requestSignIn = useCallback((action) => { storePendingAction(action); setAuthOpen(true) }, [])
   const { entries, loading: libraryLoading, error: libraryError, getStatus, toggleWatching, toggleFavorite, setStatus, toggleEpisode, markThroughEpisode, remove } = useUserLibrary(user, requestSignIn)
@@ -73,14 +78,15 @@ export default function App() {
               <button
                 key={tab.key}
                 className={`app-tab ${activeTab === tab.key ? 'app-tab--active' : ''}`}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => selectTab(tab.key)}
+                aria-current={activeTab === tab.key ? 'page' : undefined}
               >
                 {tab.label}
               </button>
             ))}
           </nav>
 
-          <div className="header-actions"><AccountMenu user={user} onSignIn={() => setAuthOpen(true)} onOpenLibrary={() => setActiveTab('library')} /></div>
+          <div className="header-actions"><AccountMenu user={user} onSignIn={() => setAuthOpen(true)} onOpenLibrary={() => selectTab('library')} /></div>
         </div>
       </header>
 
@@ -98,6 +104,7 @@ export default function App() {
               now={scheduleNow}
               refresh={refreshSchedule}
               onToggle={toggleWatching}
+              onMarkThroughEpisode={markThroughEpisode}
               onFavorite={toggleFavorite}
               getStatus={getStatus}
               weekOffset={weekOffset}
@@ -131,6 +138,8 @@ export default function App() {
           {libraryError && <p className="weekly-notice">Não foi possível sincronizar sua lista: {libraryError}</p>}
         </main>
       </div>
+
+      <MobileNav activeTab={activeTab} onSelect={selectTab} />
 
       {selectedAnime && (
         <AnimeModal

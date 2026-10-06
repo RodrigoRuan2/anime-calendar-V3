@@ -45,16 +45,16 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
           </button>
         </div>
         <div className="season-card__badges">
-          <button className={`season-card__favorite ${status.favorite ? 'active' : ''}`} onClick={(event) => { event.stopPropagation(); onFavorite?.(anime) }} aria-label="Favoritar">{status.favorite ? '♥' : '♡'}</button>
           {anime.releaseType && <span className="badge badge--type">{TYPE_LABEL[anime.releaseType]}</span>}
         </div>
+        <button className={`season-card__favorite ${status.favorite ? 'active' : ''}`} onClick={(event) => { event.stopPropagation(); onFavorite?.(anime) }} aria-label={status.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>{status.favorite ? '♥' : '♡'}</button>
       </div>
 
       <div className="season-card__info">
         <div className="season-card__heading">
           <div>
             <p className="season-card__eyebrow">{getReleaseLabel(anime, targetSeason)}</p>
-            <h3 className="season-card__title">{anime.title}</h3>
+            <h3 className="season-card__title"><button className="season-card__open" type="button" onClick={(event) => { event.stopPropagation(); onClick?.(anime) }}>{anime.title}</button></h3>
             {anime.titleEnglish && anime.titleEnglish !== anime.title && <p className="season-card__title-alt">{anime.titleEnglish}</p>}
           </div>
           {status.watching && <span className="season-card__watching">▶ Assistindo</span>}
@@ -71,6 +71,7 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
             {anime.genres?.slice(0, 2).map((genre) => <span key={genre}>{genre}</span>)}
           </div>
           <button className="season-card__details" onClick={(event) => { event.stopPropagation(); onClick?.(anime) }}>Ver detalhes →</button>
+          <button className={`season-card__mobile-action ${status.watching ? 'active-watching' : ''}`} aria-pressed={status.watching} onClick={(event) => { event.stopPropagation(); onToggle(anime, 'watching') }}>{status.watching ? '✓ Acompanhando' : '＋ Acompanhar'}</button>
         </div>
       </div>
     </article>

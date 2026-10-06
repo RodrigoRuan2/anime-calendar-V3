@@ -17,6 +17,7 @@
 .library-card > img { display: block; width: 100%; aspect-ratio: 2 / 3; object-fit: cover; background: var(--bg-secondary); }
 .library-card__body { display: flex; flex: 1; flex-direction: column; justify-content: space-between; gap: .85rem; padding: .9rem; }
 .library-card h3 { overflow-wrap: anywhere; font-size: .9rem; line-height: 1.35; }
+.library-card__open { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; line-height: inherit; text-align: left; cursor: pointer; }
 .library-card p { margin-top: .3rem; color: var(--text-muted); font-size: .72rem; }
 .library-card__actions { display: flex; flex-wrap: wrap; gap: .4rem; }
 .library-card__weekly-progress { width: 100%; border-color: rgba(74,222,128,.4) !important; background: rgba(74,222,128,.1) !important; color: #75dd91 !important; font-weight: 800 !important; }
@@ -27,10 +28,27 @@
 .library-card__actions button { cursor: pointer; font-size: 1rem; line-height: 1; }
 .library-card__actions button:first-of-type { color: var(--accent-gold); }
 
-@media (max-width: 520px) {
-  .library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
-  .library-card__body { padding: .7rem; }
-  .library-card h3 { font-size: .78rem; }
-  .library-card__actions { gap: .25rem; }
-  .library-card__actions select, .library-card__actions button { padding: .34rem; font-size: .62rem; }
+@media (max-width: 640px) {
+  .library-grid { grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+  .library-card { display: grid; grid-template-columns: 96px minmax(0, 1fr); min-height: 188px; }
+  .library-card:hover { transform: none; }
+  .library-card > img { height: 100%; aspect-ratio: auto; }
+  .library-card__body { min-width: 0; padding: .7rem; gap: .65rem; }
+  .library-card h3 { font-size: .88rem; line-height: 1.35; }
+  .library-card p { font-size: .76rem; }
+  .library-card__actions { gap: .35rem; }
+  .library-card__actions select, .library-card__actions button { min-height: 44px; padding: .45rem; font-size: .78rem; }
+  .library-card__actions select { min-width: 76px; }
+  .library-card__actions button:not(.library-card__weekly-progress) { width: 44px; flex: none; font-size: 1.2rem; }
+  .library-card__weekly-progress { font-size: .73rem !important; }
+}
+
+@media (max-width: 640px) {
+  .library-page { gap: 1rem; }
+  .library-page__header { padding: 0; }
+  .library-page__header h2 { font-size: 2rem; }
+  .library-page__header span { font-size: .81rem; }
+  .library-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; overflow: visible; }
+  .library-tabs button { justify-content: space-between; min-width: 0; min-height: 44px; padding: .55rem .7rem; font-size: .78rem; }
+  .library-tabs small { font-size: .7rem; }
 }

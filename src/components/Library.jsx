@@ -26,9 +26,9 @@ export default function Library({ entries, loading, weeklyEpisodes, onStatusChan
       const caughtUp = weeklyEpisode && (entry.user_episode_progress?.filter((item) => item.episode_number <= weeklyEpisode).length || 0) >= weeklyEpisode
       return <article className="library-card" key={entry.id} onClick={() => onAnimeClick?.(anime)}>
         <img src={entry.cover_image || 'https://placehold.co/300x420?text=?'} alt={entry.title} />
-        <div className="library-card__body"><div><h3>{entry.title}</h3><p>{progress(entry)}</p></div><div className="library-card__actions">
+        <div className="library-card__body"><div><h3><button className="library-card__open" type="button" onClick={(event) => { event.stopPropagation(); onAnimeClick?.(anime) }}>{entry.title}</button></h3><p>{progress(entry)}</p></div><div className="library-card__actions">
           {weeklyEpisode && <button className="library-card__weekly-progress" onClick={(event) => { event.stopPropagation(); onMarkThroughEpisode?.(anime, weeklyEpisode) }} disabled={caughtUp}>{caughtUp ? `Em dia até EP ${weeklyEpisode}` : `✓ Estou no EP ${weeklyEpisode}`}</button>}
-          <select value={entry.status} onClick={(event) => event.stopPropagation()} onChange={(event) => onStatusChange(anime, event.target.value)}>{TABS.slice(0, 3).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
+          <select value={entry.status} aria-label={`Estado de ${entry.title}`} onClick={(event) => event.stopPropagation()} onChange={(event) => onStatusChange(anime, event.target.value)}>{TABS.slice(0, 3).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
           <button onClick={(event) => { event.stopPropagation(); onFavorite(anime) }} aria-label="Favoritar">{entry.is_favorite ? '♥' : '♡'}</button><button onClick={(event) => { event.stopPropagation(); onRemove(entry) }} aria-label="Remover da lista">×</button>
         </div></div>
       </article>

@@ -121,3 +121,16 @@
   font-weight: 600;
   margin: 0 0.35rem 0.8rem;
 }
+
+@media (max-width: 640px) {
+  .movies-page { gap: 1.2rem; }
+  .movies-page__intro { min-height: 0; padding: 1.1rem; }
+  .movies-page__intro h1 { font-size: 2rem; line-height: 1.08; }
+  .movies-page__intro p { font-size: .82rem; line-height: 1.45; }
+  .movies-page__years { margin-top: .8rem; }
+  .movies-year-btn { min-width: 84px; min-height: 44px; padding: .45rem .8rem; }
+  .movies-year-grid { gap: 1.1rem; }
+  .movie-month__header h2 { font-size: 1.45rem; }
+  .movie-month__summary, .movie-section__empty { font-size: .8rem; }
+  .movies-page .day-grid { grid-template-columns: minmax(0, 1fr); }
+}
