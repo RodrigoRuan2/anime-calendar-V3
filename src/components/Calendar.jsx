@@ -49,14 +49,12 @@ export default function Calendar({ schedule, items = [], loading, error, partial
     const text = [anime.title, anime.titleEnglish, anime.titleRomaji].filter(Boolean).join(' ').toLowerCase()
     if (filter === 'watching' && !status.watching) return false
     if (filter === 'library' && !status.entry) return false
-    if (filter === 'today' && selectedDay !== todayKey) return false
-    if (filter === 'upcoming' && !['upcoming', 'soon'].includes(getTemporalStatus(anime, now))) return false
     if (platform !== 'all' && anime.platform !== platform) return false
     return !query || text.includes(query.toLowerCase())
   })
   const selected = weekDays.find((day) => day.key === selectedDay) || weekDays[0]
   const resetToday = () => { setWeekOffset(0); setSelectedDay(todayKey); setFilter('all') }
-  const shiftWeek = (direction) => { setWeekOffset((value) => value + direction); if (filter === 'today') setFilter('all') }
+  const shiftWeek = (direction) => setWeekOffset((value) => value + direction)
 
   if (loading) return <div className="calendar-status"><div className="loader" /><p>Atualizando calendário...</p></div>
   if (error && !items.length) return <div className="calendar-status calendar-status--error"><p>⚠️ {error}</p><button onClick={refresh}>Tentar novamente</button></div>
@@ -102,14 +100,14 @@ export default function Calendar({ schedule, items = [], loading, error, partial
         {weekDays.map((day) => {
           const count = schedule[day.key]?.length || 0
           const isToday = weekOffset === 0 && day.key === todayKey
-          return <button key={day.key} role="tab" aria-selected={selectedDay === day.key} className={`day-selector__btn ${selectedDay === day.key ? 'day-selector__btn--active' : ''} ${isToday ? 'day-selector__btn--today' : ''}`} onClick={() => { setSelectedDay(day.key); if (filter === 'today' && day.key !== todayKey) setFilter('all') }}>
+          return <button key={day.key} role="tab" aria-selected={selectedDay === day.key} className={`day-selector__btn ${selectedDay === day.key ? 'day-selector__btn--active' : ''} ${isToday ? 'day-selector__btn--today' : ''}`} onClick={() => setSelectedDay(day.key)}>
             <span className="day-selector__short">{day.short}</span><span className="day-selector__date">{day.date}</span><span className="day-selector__count">{isToday ? 'HOJE' : `${count}`}</span>
           </button>
         })}
       </div>
 
       <div className="weekly-filters">
-        {['all', 'library', 'watching', 'today', 'upcoming'].map((value) => <button key={value} className={filter === value ? 'active' : ''} aria-pressed={filter === value} onClick={() => { setFilter(value); if (value === 'today') { setWeekOffset(0); setSelectedDay(todayKey) } }}>{({ all: 'Todos', library: 'Minha lista', watching: 'Assistindo', today: 'Hoje', upcoming: 'Próximos' })[value]}</button>)}
+        {['all', 'library', 'watching'].map((value) => <button key={value} className={filter === value ? 'active' : ''} aria-pressed={filter === value} onClick={() => setFilter(value)}>{({ all: 'Todos', library: 'Minha lista', watching: 'Assistindo' })[value]}</button>)}
         <select value={platform} onChange={(event) => setPlatform(event.target.value)} aria-label="Filtrar plataforma"><option value="all">Todas plataformas</option>{platforms.map((value) => <option key={value} value={value}>{value}</option>)}</select>
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar anime..." aria-label="Buscar anime" />
       </div>
@@ -122,7 +120,7 @@ export default function Calendar({ schedule, items = [], loading, error, partial
         <button className={`weekly-mobile-filter-toggle ${filtersOpen || !['all', 'library'].includes(filter) || platform !== 'all' || query ? 'active' : ''}`} aria-expanded={filtersOpen} aria-controls="weekly-mobile-filters" onClick={() => setFiltersOpen((value) => !value)}>☷ Filtros</button>
       </div>
       {filtersOpen && <div className="weekly-mobile-filters" id="weekly-mobile-filters">
-        <label>Mostrar<select value={filter} onChange={(event) => { setFilter(event.target.value); if (event.target.value === 'today') { setWeekOffset(0); setSelectedDay(todayKey) } }}><option value="all">Todos</option><option value="library">Minha lista</option><option value="watching">Assistindo</option><option value="today">Hoje</option><option value="upcoming">Próximos</option></select></label>
+        <label>Mostrar<select value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">Todos</option><option value="library">Minha lista</option><option value="watching">Assistindo</option></select></label>
         <label>Plataforma<select value={platform} onChange={(event) => setPlatform(event.target.value)}><option value="all">Todas plataformas</option>{platforms.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
         <label className="weekly-mobile-filters__search">Buscar anime<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Digite o nome do anime" /></label>
         <button className="weekly-mobile-filters__done" onClick={() => setFiltersOpen(false)}>Ver episódios</button>
