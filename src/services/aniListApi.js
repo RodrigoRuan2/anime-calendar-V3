@@ -1,10 +1,7 @@
 const ANILIST_URL = 'https://graphql.anilist.co'
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
-const DETAILS_QUERY = `
-  query ($search: String!) {
-    Page(page: 1, perPage: 1) {
-      media(search: $search, type: ANIME) {
+const DETAILS_FIELDS = `
         id
         title { romaji english native }
         description(asHtml: false)
@@ -15,10 +12,11 @@ const DETAILS_QUERY = `
         format
         genres
         studios(isMain: true) { nodes { name } }
-      }
-    }
-  }
+        externalLinks { site url type isDisabled }
+        streamingEpisodes { site url }
 `
+const DETAILS_BY_ID_QUERY = `query ($id: Int!) { Media(id: $id, type: ANIME) { ${DETAILS_FIELDS} } }`
+const DETAILS_BY_TITLE_QUERY = `query ($search: String!) { Media(search: $search, type: ANIME) { ${DETAILS_FIELDS} } }`
 
 const MOVIES_BY_YEAR_QUERY = `
   query ($page: Int!, $yearStart: FuzzyDateInt, $nextYearStart: FuzzyDateInt) {
@@ -41,13 +39,13 @@ const MOVIES_BY_YEAR_QUERY = `
   }
 `
 
-function cacheKey(title) {
-  return `anical_anilist_${title.toLowerCase().trim()}`
+function cacheKey(title, id) {
+  return `anical_anilist_details_v2_${id || title.toLowerCase().trim()}`
 }
 
-function getCachedDetails(title) {
+function getCachedDetails(title, id) {
   try {
-    const cached = JSON.parse(sessionStorage.getItem(cacheKey(title)))
+    const cached = JSON.parse(sessionStorage.getItem(cacheKey(title, id)))
     if (!cached || Date.now() - cached.timestamp > CACHE_TTL_MS) return null
     return cached.data
   } catch {
@@ -55,32 +53,35 @@ function getCachedDetails(title) {
   }
 }
 
-function cacheDetails(title, data) {
+function cacheDetails(title, id, data) {
   try {
-    sessionStorage.setItem(cacheKey(title), JSON.stringify({ data, timestamp: Date.now() }))
+    sessionStorage.setItem(cacheKey(title, id), JSON.stringify({ data, timestamp: Date.now() }))
   } catch {
     // O modal continua funcional se o armazenamento não estiver disponível.
   }
 }
 
-export async function getAniListDetails(title, signal) {
-  if (!title) return null
+export async function getAniListDetails(title, signal, id = null) {
+  const anilistId = Number(id) > 0 ? Number(id) : null
+  if (!title && !anilistId) return null
 
-  const cached = getCachedDetails(title)
+  const cached = getCachedDetails(title, anilistId)
   if (cached) return cached
 
   const response = await fetch(ANILIST_URL, {
     method: 'POST',
     signal,
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: DETAILS_QUERY, variables: { search: title } }),
+    body: JSON.stringify(anilistId
+      ? { query: DETAILS_BY_ID_QUERY, variables: { id: anilistId } }
+      : { query: DETAILS_BY_TITLE_QUERY, variables: { search: title } }),
   })
 
   if (!response.ok) throw new Error('Não foi possível consultar a AniList.')
 
   const payload = await response.json()
-  const data = payload.data?.Page?.media?.[0] ?? null
-  if (data) cacheDetails(title, data)
+  const data = payload.data?.Media ?? null
+  if (data) cacheDetails(title, anilistId, data)
   return data
 }
 

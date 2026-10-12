@@ -198,6 +198,9 @@
   margin-bottom: 1.2rem;
 }
 
+.modal__watch-empty, .modal__watch-note { color: var(--text-muted); font-size: .74rem; line-height: 1.5; }
+.modal__watch-note { margin-top: .55rem; }
+
 .modal__stream-link {
   font-size: 0.68rem;
   font-weight: 700;

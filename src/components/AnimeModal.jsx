@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getAniListDetails } from '../services/aniListApi'
 import { cleanSynopsis, translateSynopsis } from '../services/translationApi'
 import { formatScore, genreLabel } from '../utils/animeFilters'
+import { getStreamingLinks } from '../utils/streamingLinks'
 import '../styles/AnimeModal.css'
 
 const IMAGE_BASE = 'https://img.animeschedule.net/production/assets/public/img/'
@@ -39,7 +40,7 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
     const controller = new AbortController()
     const searchTitle = anime.romaji || anime.english || anime.title
 
-    getAniListDetails(searchTitle, controller.signal)
+    getAniListDetails(searchTitle, controller.signal, anime.anilistId)
       .then(async (data) => {
         if (!data?.description) return data
 
@@ -59,7 +60,7 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
       })
 
     return () => controller.abort()
-  }, [anime.english, anime.romaji, anime.title])
+  }, [anime.anilistId, anime.english, anime.romaji, anime.title])
 
   const posterUrl =
     details?.coverImage?.large ||
@@ -78,7 +79,7 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
   const type       = details?.format || ''
   const studios    = details?.studios?.nodes?.map((s) => s.name).join(', ') || ''
   const genres     = details?.genres || []
-  const streams    = anime.streams || []
+  const streams    = getStreamingLinks({ streams: anime.streams || [], externalLinks: details?.externalLinks || [], streamingEpisodes: details?.streamingEpisodes || [] })
   const isWatching = status?.watching
   const isAiring   = status_str === 'RELEASING' || status_str === 'Currently Airing'
   const hasScheduleInfo = anime.episodeNumber || anime.localDate || anime.scheduleSources?.length
@@ -130,6 +131,20 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
                 </div>
               )}
 
+              <section className="modal__watch" aria-label="Onde assistir">
+                <p className="modal__synopsis-label">Onde assistir</p>
+                {streams.length > 0 ? <div className="modal__streams">
+                  {streams.map((stream) => (
+                    <a key={`${stream.platform}_${stream.url}`} href={stream.url} target="_blank" rel="noopener noreferrer" className="modal__stream-link" style={{ backgroundColor: PLATFORM_COLORS[stream.platform] || '#555' }}>
+                      {stream.name}{stream.episode ? ' · episódio' : ''} ↗
+                    </a>
+                  ))}
+                </div> : <p className="modal__watch-empty">Nenhum link de streaming informado para este anime.</p>}
+                <p className="modal__watch-note">Links de terceiros. A disponibilidade pode variar no Brasil e mudar com o tempo.</p>
+              </section>
+
+              <div className="modal__divider" />
+
               {synopsis && (
                 <>
                   <p className="modal__synopsis-label">Sinopse</p>
@@ -153,26 +168,6 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
                       return `${source.name}: ${when}${source.estimated ? ' (estimado)' : ''}`
                     }).join(' · ')}</p>}
                   </section>
-                </>
-              )}
-
-              {streams.length > 0 && (
-                <>
-                  <div className="modal__divider" />
-                  <div className="modal__streams">
-                    {streams.map((stream) => (
-                      <a
-                        key={`${stream.platform ?? stream.name}_${stream.url}`}
-                        href={`https://${stream.url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="modal__stream-link"
-                        style={{ backgroundColor: PLATFORM_COLORS[stream.platform] || '#555' }}
-                      >
-                        {stream.name}
-                      </a>
-                    ))}
-                  </div>
                 </>
               )}
 

@@ -49,6 +49,9 @@
 .discover-card__body > strong { color: #edba77; font-size: .8rem; }
 .discover-card__reasons { display: flex; flex-wrap: wrap; gap: .3rem; }
 .discover-card__reasons span { padding: .2rem .4rem; border-radius: 99px; background: #342a37; color: #dcc9ce; font-size: .65rem; }
+.discover-card__watch { display: flex; flex-wrap: wrap; gap: .25rem .4rem; color: #aaa0a9; font-size: .68rem; line-height: 1.5; }
+.discover-card__watch a { color: #e7b681; text-decoration: underline; text-underline-offset: 2px; }
+.discover-card__watch button { border: 0; background: none; color: #e7b681; cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .discover-card__actions { display: flex; gap: .3rem; margin-top: auto; }
 .discover-card__actions button { min-height: 32px; padding: .35rem .55rem; border: 1px solid #74534c; border-radius: 6px; background: #382a30; color: #f2d3c1; cursor: pointer; font: inherit; font-size: .72rem; }
 .discover-more { justify-self: center; background: #6c4c42; }

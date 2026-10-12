@@ -1,3 +1,5 @@
+import { getStreamingLinks } from '../utils/streamingLinks.js'
+
 const ANILIST_URL = 'https://graphql.anilist.co'
 const MAX_PAGES = 4
 
@@ -28,6 +30,7 @@ function discoverQuery(variables) {
         description(asHtml: false) averageScore popularity
         episodes status format genres
         tags { name rank }
+        externalLinks { site url type isDisabled }
         startDate { year month day }
       }
     }
@@ -116,7 +119,7 @@ export function normalizeRecommendation(media) {
     genres: media.genres || [],
     tags: (media.tags || []).filter((tag) => tag.rank >= 50).map((tag) => tag.name),
     startDate: media.startDate?.year ? media.startDate : null,
-    streams: [],
+    streams: getStreamingLinks({ externalLinks: media.externalLinks || [] }),
   }
 }
 
