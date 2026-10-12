@@ -351,7 +351,7 @@ body::before {
     left: 0;
     z-index: 40;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: .15rem;
     min-height: calc(70px + env(safe-area-inset-bottom, 0px));
     padding: .35rem max(.6rem, env(safe-area-inset-left, 0px)) calc(.4rem + env(safe-area-inset-bottom, 0px)) max(.6rem, env(safe-area-inset-right, 0px));
@@ -372,7 +372,7 @@ body::before {
     background: transparent;
     color: var(--text-muted);
     font: inherit;
-    font-size: .68rem;
+    font-size: .62rem;
     font-weight: 700;
     white-space: nowrap;
     cursor: pointer;

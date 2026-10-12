@@ -7,6 +7,7 @@ import AuthModal from './components/AuthModal'
 import AccountMenu from './components/AccountMenu'
 import Library from './components/Library'
 import MobileNav from './components/MobileNav'
+import Discover from './components/Discover'
 import { useAuth } from './hooks/useAuth'
 import { useUserLibrary } from './hooks/useUserLibrary'
 import { useAnimeSchedule } from './hooks/useAnimeSchedule'
@@ -17,6 +18,7 @@ const TABS = [
   { key: 'calendar', label: 'Agenda' },
   { key: 'season', label: 'Temporada' },
   { key: 'movies', label: 'Filmes' },
+  { key: 'discover', label: 'Descobrir' },
   { key: 'library', label: 'Minha lista' },
 ]
 
@@ -116,6 +118,17 @@ export default function App() {
               getStatus={getStatus}
               onToggle={toggleWatching}
               onFavorite={toggleFavorite}
+              onAnimeClick={setSelectedAnime}
+            />
+          )}
+
+          {activeTab === 'discover' && (
+            <Discover
+              entries={entries}
+              user={user}
+              getStatus={getStatus}
+              onFavorite={toggleFavorite}
+              onToggle={toggleWatching}
               onAnimeClick={setSelectedAnime}
             />
           )}
