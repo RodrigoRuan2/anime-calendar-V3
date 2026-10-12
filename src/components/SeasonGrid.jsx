@@ -4,6 +4,7 @@ import { getSeasonForDate, getSeasonLabel, shiftSeason } from '../utils/season'
 import { groupSeasonAgenda } from '../utils/seasonAgenda'
 import { genreLabel, genreOptions, matchesGenreAndScore, SCORE_OPTIONS } from '../utils/animeFilters'
 import SeasonCard from './SeasonCard'
+import RecommendationPanel from './RecommendationPanel'
 import '../styles/SeasonGrid.css'
 
 const FILTERS = [
@@ -91,6 +92,8 @@ export default function SeasonGrid({
           <div className="season-control-panel__status"><span className="season-count">{filtered.length} {filtered.length === 1 ? 'anime' : 'animes'}</span>{!loading && updating && <span className="season-sync">Atualizando fontes…</span>}{!loading && stale && !updating && <span className="season-sync">Exibindo última versão salva</span>}</div>
         </div>
       </div>
+
+      <RecommendationPanel onAnimeClick={onAnimeClick} />
 
       {loading ? (
         <div className="calendar-status"><div className="loader" /><p>Carregando catálogo da temporada...</p></div>

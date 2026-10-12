@@ -1,0 +1,27 @@
+.recommendation-panel { margin: 0 3.2% 2rem; padding: 1.15rem; border: 1px solid rgba(231, 177, 109, .28); border-radius: 13px; background: linear-gradient(120deg, #1d1822, #15131e); }
+.recommendation-panel__heading { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+.recommendation-panel__heading p { margin: 0 0 .25rem; color: #c48d64; font-size: .62rem; font-weight: 800; letter-spacing: .16em; }
+.recommendation-panel__heading h2 { margin: 0; color: #f4ece5; font-family: 'Bebas Neue', sans-serif; font-size: 2rem; font-weight: 400; letter-spacing: .05em; }
+.recommendation-panel__heading > span { color: #efbb75; font-size: 1.4rem; }
+.recommendation-panel__controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: .65rem; margin-top: 1rem; align-items: end; }
+.recommendation-panel__controls label { display: grid; gap: .3rem; color: #a49ba6; font-size: .64rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.recommendation-panel__controls select, .recommendation-panel__controls button { min-height: 40px; border-radius: 7px; font: inherit; }
+.recommendation-panel__controls select { min-width: 0; padding: .45rem .6rem; border: 1px solid #373340; background: #100f1a; color: var(--text-primary); font-size: .8rem; text-transform: none; }
+.recommendation-panel__controls button { padding: .45rem .85rem; border: 0; background: #aa4339; color: white; font-size: .8rem; font-weight: 700; cursor: pointer; }
+.recommendation-panel__controls button:hover:not(:disabled), .recommendation-card__content button:hover { background: #bd5044; }
+.recommendation-panel__controls button:disabled { cursor: wait; opacity: .7; }
+.recommendation-panel__hint, .recommendation-panel__message { margin: 1rem 0 0; color: #a49ba6; font-size: .84rem; }
+.recommendation-panel__message--error { color: #e88980; }
+.recommendation-card { display: flex; gap: 1rem; position: relative; margin-top: 1rem; overflow: hidden; border-radius: 9px; background: rgba(255,255,255,.05); }
+.recommendation-card > img { width: 94px; aspect-ratio: 2 / 3; object-fit: cover; }
+.recommendation-card__content { min-width: 0; padding: .7rem .7rem .7rem 0; }
+.recommendation-card__content > p { margin: 0; color: #c48d64; font-size: .58rem; font-weight: 800; letter-spacing: .14em; }
+.recommendation-card__content h3 { margin: .22rem 0; color: #f5efea; font-size: 1rem; }
+.recommendation-card__content > span { color: #efbb75; font-size: .78rem; font-weight: 700; }
+.recommendation-card__content div { display: flex; flex-wrap: wrap; gap: .35rem; margin: .45rem 0; }
+.recommendation-card__content small { padding: .18rem .35rem; border-radius: 99px; background: rgba(255,255,255,.08); color: #cfc6ca; font-size: .65rem; }
+.recommendation-card__content button, .recommendation-card__another { border: 0; border-radius: 6px; background: #705047; color: white; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 700; padding: .38rem .55rem; }
+.recommendation-card__another { position: absolute; right: .6rem; bottom: .6rem; background: transparent; color: #d7c1ac; }
+.recommendation-card__another:hover { color: #fff; }
+.recommendation-panel select:focus-visible, .recommendation-panel button:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+@media (max-width: 720px) { .recommendation-panel { margin: 0 .7rem 1.3rem; } .recommendation-panel__controls { grid-template-columns: repeat(2, minmax(0, 1fr)); } .recommendation-panel__controls button { grid-column: 1 / -1; } }
