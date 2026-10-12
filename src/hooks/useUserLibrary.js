@@ -52,7 +52,7 @@ export function useUserLibrary(user, onSignInRequired) {
   }, [entryFor, replace, requireUser, user])
 
   const setStatus = useCallback(async (anime, status) => {
-    if (!requireUser(anime, 'status')) return
+    if (!requireUser(anime, `status:${status}`)) return
     const entry = entryFor(anime)
     try { replace(entry ? await updateLibraryItem(entry.id, { status }) : await upsertLibraryItem(user.id, anime, { status })); setError(null) } catch (cause) { setError(cause.message) }
   }, [entryFor, replace, requireUser, user])

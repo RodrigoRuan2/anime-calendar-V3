@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AnimeCard from './AnimeCard'
 import { useMonthlyMovies } from '../hooks/useMonthlyMovies'
+import { getMovieMonthSummary } from '../utils/movieRelease'
 import '../styles/Movies.css'
 
 const MONTHS = [
@@ -8,10 +9,8 @@ const MONTHS = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
-function MovieMonth({ month, movies, getStatus, onToggle, onFavorite, onAnimeClick }) {
-  const now = new Date()
-  const released = movies.filter((movie) => new Date(movie.episodeDate) < now)
-  const upcoming = movies.length - released.length
+function MovieMonth({ month, movies, getStatus, onPlan, onFavorite, onAnimeClick }) {
+  const { released, upcoming, unknown } = getMovieMonthSummary(movies)
 
   return (
     <section className="movie-month">
@@ -28,6 +27,8 @@ function MovieMonth({ month, movies, getStatus, onToggle, onFavorite, onAnimeCli
             {released > 0 && `${released} lançado${released === 1 ? '' : 's'}`}
             {released > 0 && upcoming > 0 && ' · '}
             {upcoming > 0 && `${upcoming} por lançar`}
+            {unknown > 0 && (released > 0 || upcoming > 0 ? ' · ' : '')}
+            {unknown > 0 && `${unknown} sem dia confirmado`}
           </p>
           <div className="day-grid">
             {movies.map((movie) => (
@@ -35,10 +36,10 @@ function MovieMonth({ month, movies, getStatus, onToggle, onFavorite, onAnimeCli
                 key={movie.anilistId || movie.route}
                 anime={movie}
                 status={getStatus(movie)}
-                onToggle={onToggle}
+                movie
+                onPlan={onPlan}
                 onFavorite={onFavorite}
-                onClick={onAnimeClick}
-                aired={new Date(movie.episodeDate) < now}
+                onClick={(selected) => onAnimeClick({ ...selected, isMovie: true })}
               />
             ))}
           </div>
@@ -48,7 +49,7 @@ function MovieMonth({ month, movies, getStatus, onToggle, onFavorite, onAnimeCli
   )
 }
 
-export default function Movies({ getStatus, onToggle, onFavorite, onAnimeClick }) {
+export default function Movies({ getStatus, onPlan, onFavorite, onAnimeClick }) {
   const currentYear = new Date().getFullYear()
   const [selectedYear, setSelectedYear] = useState(currentYear)
   const heroStyle = { '--movie-hero-image': `url("${import.meta.env.BASE_URL}images/movies-hero-v2.png")` }
@@ -82,7 +83,7 @@ export default function Movies({ getStatus, onToggle, onFavorite, onAnimeClick }
         key={selectedYear}
         year={selectedYear}
         getStatus={getStatus}
-        onToggle={onToggle}
+        onPlan={onPlan}
         onFavorite={onFavorite}
         onAnimeClick={onAnimeClick}
       />
@@ -90,8 +91,8 @@ export default function Movies({ getStatus, onToggle, onFavorite, onAnimeClick }
   )
 }
 
-function MovieYear({ year, getStatus, onToggle, onFavorite, onAnimeClick }) {
-  const { months, loading, error } = useMonthlyMovies(year)
+function MovieYear({ year, getStatus, onPlan, onFavorite, onAnimeClick }) {
+  const { months, loading, error, partial } = useMonthlyMovies(year)
 
   if (loading) {
     return <div className="calendar-status"><div className="loader" /><p>Buscando filmes de {year}...</p></div>
@@ -103,13 +104,14 @@ function MovieYear({ year, getStatus, onToggle, onFavorite, onAnimeClick }) {
 
   return (
     <div className="movies-year-grid">
+      {partial && <p className="weekly-notice">Algumas fontes não responderam. A lista de filmes pode estar incompleta no momento.</p>}
       {months.map(({ month, movies }) => (
         <MovieMonth
           key={month}
           month={month}
           movies={movies}
           getStatus={getStatus}
-          onToggle={onToggle}
+          onPlan={onPlan}
           onFavorite={onFavorite}
           onAnimeClick={onAnimeClick}
         />

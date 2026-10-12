@@ -20,7 +20,7 @@ const PLATFORM_COLORS = {
   bilibili:    '#00A1D6',
 }
 
-export default function AnimeModal({ anime, status, onToggle, onFavorite, onClose }) {
+export default function AnimeModal({ anime, status, onToggle, onPlan, onFavorite, onClose }) {
   const [details, setDetails] = useState(null)
   const [loadingDetails, setLoadingDetails] = useState(true)
 
@@ -81,6 +81,8 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
   const genres     = details?.genres || []
   const streams    = getStreamingLinks({ streams: anime.streams || [], externalLinks: details?.externalLinks || [], streamingEpisodes: details?.streamingEpisodes || [] })
   const isWatching = status?.watching
+  const isMovie = anime.isMovie || anime.format === 'MOVIE' || details?.format === 'MOVIE'
+  const isPlanned = status?.entry?.status === 'planejando'
   const isAiring   = status_str === 'RELEASING' || status_str === 'Currently Airing'
   const hasScheduleInfo = anime.episodeNumber || anime.localDate || anime.scheduleSources?.length
 
@@ -115,11 +117,11 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
                 {score && (
                   <span className="modal__stat modal__stat--score">⭐ {score}/10</span>
                 )}
-                {isAiring && (
+                {isAiring && !isMovie && (
                   <span className="modal__stat modal__stat--airing">● Em exibição</span>
                 )}
                 {type && <span className="modal__stat">{type}</span>}
-                {episodes && <span className="modal__stat">{episodes} eps</span>}
+                {episodes && !isMovie && <span className="modal__stat">{episodes} eps</span>}
                 {studios && <span className="modal__stat">🏢 {studios}</span>}
               </div>
 
@@ -175,10 +177,11 @@ export default function AnimeModal({ anime, status, onToggle, onFavorite, onClos
 
               <div className="modal__actions">
                 <button
-                  className={`modal__action-btn ${isWatching ? 'active-watching' : ''}`}
-                  onClick={() => onToggle(anime, 'watching')}
+                  className={`modal__action-btn ${(isMovie ? isPlanned : isWatching) ? 'active-watching' : ''}`}
+                  onClick={() => isMovie ? onPlan(anime) : onToggle(anime)}
+                  disabled={isMovie && isPlanned}
                 >
-                  {isWatching ? '✓ Acompanhando' : '＋ Acompanhar'}
+                  {isMovie ? isPlanned ? '✓ Na minha lista' : '＋ Quero assistir' : isWatching ? '✓ Acompanhando' : '＋ Acompanhar'}
                 </button>
                 <button className={`modal__action-btn ${status?.favorite ? 'active-favorite' : ''}`} onClick={() => onFavorite?.(anime)}>
                   {status?.favorite ? '♥ Favorito' : '♡ Favoritar'}

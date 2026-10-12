@@ -3,6 +3,8 @@
 .library-page__header p { color: var(--accent-gold); font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .library-page__header h2 { margin: .2rem 0; font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: .08em; }
 .library-page__header span { color: var(--text-muted); font-size: .82rem; }
+.library-export { display: block; margin-top: .85rem; min-height: 40px; padding: .45rem .75rem; border: 1px solid #806b4a; border-radius: 8px; background: #29231f; color: #f3cf9f; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 700; }
+.library-export:disabled { opacity: .5; cursor: default; }
 .library-tabs { display: flex; gap: .4rem; overflow-x: auto; padding-bottom: .15rem; }
 .library-tabs button { display: inline-flex; align-items: center; gap: .4rem; white-space: nowrap; padding: .5rem .75rem; border: 1px solid var(--border); border-radius: 99px; background: var(--bg-card); color: var(--text-muted); font: inherit; font-size: .72rem; font-weight: 700; cursor: pointer; }
 .library-tabs button.active { border-color: var(--accent-gold); background: rgba(200,144,26,.1); color: var(--accent-gold); }

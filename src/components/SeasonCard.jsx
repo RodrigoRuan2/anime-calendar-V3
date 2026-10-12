@@ -11,8 +11,10 @@ const TYPE_LABEL = { new: 'Novo', sequel: 'Sequência', continuing: 'Continuaç�
 
 export default function SeasonCard({ anime, targetSeason, status, onToggle, onFavorite, onClick }) {
   const imageUrl = anime.coverImage || (anime.imageVersionRoute ? `${IMAGE_BASE}${anime.imageVersionRoute}` : null) || anime.images?.jpg?.image_url
-  const cardRef = useRef(null)
-  const [visible, setVisible] = useState(false)
+  const requestRef = useRef(null)
+  const [showSynopsis, setShowSynopsis] = useState(false)
+  const [loadingSynopsis, setLoadingSynopsis] = useState(false)
+  const [synopsisError, setSynopsisError] = useState(false)
   const [description, setDescription] = useState(null)
   const preview = getSynopsisPreview(anime.description)
   const date = seasonAgendaDate(anime, targetSeason)
@@ -20,28 +22,29 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
     : date.kind === 'month' ? 'Dia a confirmar'
       : date.kind === 'airing' ? 'Em exibição' : 'Data a confirmar'
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setVisible(true)
-        observer.disconnect()
-      }
-    }, { rootMargin: '180px' })
-    if (cardRef.current) observer.observe(cardRef.current)
-    return () => observer.disconnect()
-  }, [])
+  useEffect(() => () => requestRef.current?.abort(), [])
 
-  useEffect(() => {
-    if (!visible || !preview) return undefined
+  const toggleSynopsis = async (event) => {
+    event.stopPropagation()
+    if (showSynopsis) { setShowSynopsis(false); requestRef.current?.abort(); setLoadingSynopsis(false); return }
+    setShowSynopsis(true)
+    if (description || !preview) return
     const controller = new AbortController()
-    translateSynopsis(preview, controller.signal)
-      .then((translation) => { if (!controller.signal.aborted) setDescription(translation) })
-      .catch(() => undefined)
-    return () => controller.abort()
-  }, [preview, visible])
+    requestRef.current = controller
+    setLoadingSynopsis(true)
+    setSynopsisError(false)
+    try {
+      const translation = await translateSynopsis(preview, controller.signal)
+      if (!controller.signal.aborted) setDescription(translation)
+    } catch {
+      if (!controller.signal.aborted) setSynopsisError(true)
+    } finally {
+      if (!controller.signal.aborted) setLoadingSynopsis(false)
+    }
+  }
 
   return (
-    <article ref={cardRef} className={`season-agenda-card ${status.watching ? 'season-agenda-card--watching' : ''}`} onClick={onClick ? () => onClick(anime) : undefined}>
+    <article className={`season-agenda-card ${status.watching ? 'season-agenda-card--watching' : ''}`} onClick={onClick ? () => onClick(anime) : undefined}>
       <div className="season-agenda-card__date" aria-label={date.kind === 'day' ? `Dia ${date.day}, ${date.weekday}` : releaseText}>
         <strong>{date.kind === 'day' ? String(date.day).padStart(2, '0') : date.kind === 'airing' ? 'NO' : '—'}</strong>
         <span>{date.kind === 'day' ? date.weekday : date.kind === 'airing' ? 'AR' : date.kind === 'month' ? 'DIA' : 'DATA'}</span>
@@ -53,7 +56,8 @@ export default function SeasonCard({ anime, targetSeason, status, onToggle, onFa
       <div className="season-agenda-card__info">
         <p className="season-agenda-card__eyebrow">{TYPE_LABEL[anime.releaseType] || 'Anime'} · {releaseText}</p>
         <h3 className="season-agenda-card__title"><button type="button" onClick={(event) => { event.stopPropagation(); onClick?.(anime) }}>{anime.title}</button></h3>
-        {description && <p className="season-agenda-card__description">{description}</p>}
+        {preview && <button className="season-agenda-card__synopsis-toggle" type="button" aria-expanded={showSynopsis} onClick={toggleSynopsis}>{showSynopsis ? 'Ocultar sinopse' : 'Ler sinopse'}</button>}
+        {showSynopsis && (loadingSynopsis ? <p className="season-agenda-card__description">Traduzindo sinopse…</p> : synopsisError ? <p className="season-agenda-card__description">Tradução indisponível no momento.</p> : description && <p className="season-agenda-card__description">{description}</p>)}
         <div className="season-agenda-card__tags">
           {anime.genres?.slice(0, 2).map((genre) => <span key={genre}>{genreLabel(genre)}</span>)}
           {anime.episodes && <span>{anime.episodes} eps</span>}

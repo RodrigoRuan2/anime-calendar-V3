@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { buildLibraryCsv } from '../utils/libraryExport'
 import '../styles/Library.css'
 
 const TABS = [
@@ -12,8 +13,17 @@ function entryAnime(entry) {
 export default function Library({ entries, loading, onStatusChange, onFavorite, onRemove, onAnimeClick }) {
   const [tab, setTab] = useState('planejando')
   const visible = useMemo(() => entries.filter((entry) => tab === 'favorites' ? entry.is_favorite : entry.status === tab), [entries, tab])
+  const exportCsv = () => {
+    const blob = new Blob([buildLibraryCsv(entries)], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `anical-minha-lista-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
   return <section className="library-page">
-    <header className="library-page__header"><p>Minha conta</p><h2>Minha lista</h2><span>Tudo o que você acompanha fica privado e sincronizado.</span></header>
+    <header className="library-page__header"><p>Minha conta</p><h2>Minha lista</h2><span>Tudo o que você acompanha fica privado e sincronizado.</span><button className="library-export" type="button" onClick={exportCsv} disabled={loading || !entries.length}>Baixar minha lista (CSV)</button></header>
     <nav className="library-tabs" aria-label="Listas pessoais">{TABS.map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{label}<small>{entries.filter((entry) => key === 'favorites' ? entry.is_favorite : entry.status === key).length}</small></button>)}</nav>
     {loading ? <div className="library-empty">Carregando sua lista…</div> : visible.length === 0 ? <div className="library-empty"><strong>Sua lista está vazia aqui.</strong><span>Adicione animes pelo calendário, pela temporada ou pelos filmes.</span></div> : <div className="library-grid">{visible.map((entry) => {
       const anime = entryAnime(entry)

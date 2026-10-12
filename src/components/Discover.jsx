@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { formatScore, genreLabel } from '../utils/animeFilters'
+import { discoverFiltersFromSearch, discoverSearchUrl, EMPTY_DISCOVER_FILTERS } from '../utils/discoverUrl'
 import {
   DISCOVER_FORMAT_LABELS, DISCOVER_FORMATS, DISCOVER_GENRES, DISCOVER_PLATFORMS,
   DISCOVER_SOURCES, DISCOVER_STATUSES, DISCOVER_TOPICS,
@@ -8,15 +9,6 @@ import {
 } from '../services/recommendationApi'
 import '../styles/Discover.css'
 
-const EMPTY_FILTERS = {
-  genres: [], excludedGenres: [], genreMode: 'all',
-  topic: 'all', topicStrength: 'strong', score: '0',
-  format: 'all', status: 'all', release: 'all',
-  yearStart: '', yearEnd: '', maxEpisodes: '0', maxMinutes: '0',
-  season: 'all', source: 'all', platform: 'all', sort: 'score',
-  excludeSaved: false, excludeCompleted: false, avoidUnstartedSequels: false,
-}
-const INITIAL_FILTERS = { ...EMPTY_FILTERS, genres: ['Comedy'], topic: 'Isekai', score: '8' }
 const SCORE_OPTIONS = [
   ['0', 'Qualquer nota'], ['6', '6,0 ou mais'], ['7', '7,0 ou mais'],
   ['8', '8,0 ou mais'], ['9', '9,0 ou mais'],
@@ -35,8 +27,9 @@ const SEASON_OPTIONS = [
 ]
 const FALLBACK_IMAGE = `${import.meta.env.BASE_URL}favicon.svg`
 
-function DiscoverCard({ anime, filters, getStatus, onFavorite, onToggle, onAnimeClick }) {
+function DiscoverCard({ anime, filters, getStatus, onFavorite, onToggle, onPlan, onAnimeClick }) {
   const status = getStatus(anime)
+  const isMovie = anime.format === 'MOVIE'
   const reasons = recommendationReasons(anime, filters)
   return <article className="discover-card">
     <button className="discover-card__poster" type="button" onClick={() => onAnimeClick(anime)} aria-label={`Ver detalhes de ${anime.title}`}>
@@ -56,15 +49,15 @@ function DiscoverCard({ anime, filters, getStatus, onFavorite, onToggle, onAnime
         {anime.streams.length > 2 && <button type="button" onClick={() => onAnimeClick(anime)} aria-label={`Ver todas as plataformas de ${anime.title}`}>+{anime.streams.length - 2}</button>}
       </div>}
       <div className="discover-card__actions">
-        <button type="button" onClick={() => onToggle(anime)}>{status.watching ? '✓ Acompanhando' : '+ Acompanhar'}</button>
+        <button type="button" onClick={() => isMovie ? onPlan(anime) : onToggle(anime)} disabled={isMovie && status.entry?.status === 'planejando'}>{isMovie ? status.entry?.status === 'planejando' ? '✓ Na minha lista' : '+ Quero assistir' : status.watching ? '✓ Acompanhando' : '+ Acompanhar'}</button>
         <button type="button" onClick={() => onFavorite(anime)} aria-label={status.favorite ? `Remover ${anime.title} dos favoritos` : `Favoritar ${anime.title}`}>{status.favorite ? '♥' : '♡'}</button>
       </div>
     </div>
   </article>
 }
 
-export default function Discover({ entries, user, getStatus, onFavorite, onToggle, onAnimeClick }) {
-  const [filters, setFilters] = useState(INITIAL_FILTERS)
+export default function Discover({ entries, user, getStatus, onFavorite, onToggle, onPlan, onAnimeClick }) {
+  const [filters, setFilters] = useState(() => discoverFiltersFromSearch(window.location.search, DISCOVER_GENRES) || EMPTY_DISCOVER_FILTERS)
   const [result, setResult] = useState(null)
   const [appliedFilters, setAppliedFilters] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -73,7 +66,9 @@ export default function Discover({ entries, user, getStatus, onFavorite, onToggl
   const [pageError, setPageError] = useState(null)
   const [visibleCount, setVisibleCount] = useState(12)
   const [spotlight, setSpotlight] = useState(null)
+  const [shareMessage, setShareMessage] = useState('')
   const requestRef = useRef(null)
+  const searchRef = useRef(null)
   const tasteRef = useRef(null)
   const searchDateRef = useRef(null)
 
@@ -99,32 +94,34 @@ export default function Discover({ entries, user, getStatus, onFavorite, onToggl
     }
   })
 
-  const search = async () => {
-    const start = Number(filters.yearStart)
-    const end = Number(filters.yearEnd)
+  const search = async (requestedFilters = filters, { surpriseMe = false, updateHistory = true } = {}) => {
+    const start = Number(requestedFilters.yearStart)
+    const end = Number(requestedFilters.yearEnd)
     if (start && end && start > end) { setError('O ano inicial precisa ser menor ou igual ao ano final.'); return }
-    if (filters.sort === 'forYou' && !favoriteCount) { setError('Favorite pelo menos um anime na sua lista para usar “Para mim”.'); return }
-    if (filters.release === 'upcoming' && ['FINISHED', 'RELEASING'].includes(filters.status)) {
+    if (requestedFilters.sort === 'forYou' && !favoriteCount) { setError('Favorite pelo menos um anime na sua lista para usar “Para mim”.'); return }
+    if (requestedFilters.release === 'upcoming' && ['FINISHED', 'RELEASING'].includes(requestedFilters.status)) {
       setError('“Ainda vai estrear” não combina com “Finalizados” ou “Em exibição”.'); return
     }
-    if (filters.release === 'released' && filters.status === 'NOT_YET_RELEASED') {
+    if (requestedFilters.release === 'released' && requestedFilters.status === 'NOT_YET_RELEASED') {
       setError('“Já estreou” não combina com “Ainda não lançados”.'); return
     }
 
     requestRef.current?.abort()
+    setLoadingMore(false)
     const controller = new AbortController()
     requestRef.current = controller
     const selected = {
-      ...filters, genres: [...filters.genres], excludedGenres: [...filters.excludedGenres],
-      excludeSaved: filters.excludeSaved && Boolean(user),
-      excludeCompleted: filters.excludeCompleted && Boolean(user),
-      avoidUnstartedSequels: filters.avoidUnstartedSequels && Boolean(user),
+      ...requestedFilters, genres: [...requestedFilters.genres], excludedGenres: [...requestedFilters.excludedGenres],
+      excludeSaved: requestedFilters.excludeSaved && Boolean(user),
+      excludeCompleted: requestedFilters.excludeCompleted && Boolean(user),
+      avoidUnstartedSequels: requestedFilters.avoidUnstartedSequels && Boolean(user),
     }
     const searchDate = new Date()
     setLoading(true)
     setError(null)
     setPageError(null)
     setSpotlight(null)
+    setShareMessage('')
     try {
       const taste = selected.sort === 'forYou' ? await getFavoriteTaste(entries, controller.signal) : null
       if (selected.sort === 'forYou' && !taste?.preferredGenres.length) throw new Error('Não foi possível identificar os gêneros dos seus favoritos.')
@@ -135,10 +132,56 @@ export default function Discover({ entries, user, getStatus, onFavorite, onToggl
       setResult(data)
       setAppliedFilters(selected)
       setVisibleCount(12)
+      if (surpriseMe && data.items.length) setSpotlight(data.items[Math.floor(Math.random() * data.items.length)])
+      if (updateHistory) {
+        const url = discoverSearchUrl(window.location.href, selected)
+        if (url !== window.location.href) window.history.pushState({ tab: 'discover' }, '', url)
+      }
     } catch (cause) {
       if (!controller.signal.aborted) setError(cause.message || 'Não foi possível buscar animes agora.')
     } finally {
       if (!controller.signal.aborted) setLoading(false)
+    }
+  }
+  useEffect(() => { searchRef.current = search })
+
+  useEffect(() => {
+    const restore = () => {
+      const shared = discoverFiltersFromSearch(window.location.search, DISCOVER_GENRES)
+      if (shared) {
+        setFilters(shared)
+        searchRef.current(shared, { updateHistory: false })
+      } else {
+        requestRef.current?.abort()
+        setFilters({ ...EMPTY_DISCOVER_FILTERS })
+        setResult(null)
+        setAppliedFilters(null)
+      }
+    }
+    window.addEventListener('popstate', restore)
+    if (new URLSearchParams(window.location.search).has('filters')) {
+      const shared = discoverFiltersFromSearch(window.location.search, DISCOVER_GENRES)
+      if (shared) searchRef.current(shared, { updateHistory: false })
+    }
+    return () => window.removeEventListener('popstate', restore)
+  }, [])
+
+  const runPreset = (preset) => {
+    const next = { ...EMPTY_DISCOVER_FILTERS, genres: [], excludedGenres: [] }
+    if (preset === 'trending') next.sort = 'trending'
+    if (preset === 'short') { next.maxEpisodes = '12'; next.sort = 'popular' }
+    if (preset === 'personal') next.sort = 'forYou'
+    if (preset === 'surprise') next.sort = 'popular'
+    setFilters(next)
+    search(next, { surpriseMe: preset === 'surprise' })
+  }
+
+  const share = async () => {
+    try {
+      await navigator.clipboard.writeText(discoverSearchUrl(window.location.href, appliedFilters))
+      setShareMessage('Link da busca copiado.')
+    } catch {
+      setShareMessage('Não foi possível copiar. Use o endereço desta página.')
     }
   }
 
@@ -188,8 +231,16 @@ export default function Discover({ entries, user, getStatus, onFavorite, onToggl
       <span>Combine seus gostos, explore várias opções e escolha o que assistir.</span>
     </header>
 
+    <div className="discover-shortcuts" aria-label="Buscas rápidas">
+      <span>Comece por aqui</span>
+      <button type="button" onClick={() => runPreset('trending')} disabled={loading || loadingMore}>Em alta agora</button>
+      <button type="button" onClick={() => runPreset('short')} disabled={loading || loadingMore}>Curtos para maratonar</button>
+      <button type="button" onClick={() => runPreset('surprise')} disabled={loading || loadingMore}>✦ Me surpreenda</button>
+      {user && favoriteCount > 0 && <button type="button" onClick={() => runPreset('personal')} disabled={loading || loadingMore}>Parecidos com meus favoritos</button>}
+    </div>
+
     <div className="discover-builder">
-      <div className="discover-builder__heading"><h3>Monte seu pedido</h3><button type="button" onClick={() => setFilters({ ...EMPTY_FILTERS, genres: [], excludedGenres: [] })}>Limpar filtros</button></div>
+      <div className="discover-builder__heading"><h3>Monte seu pedido</h3><button type="button" onClick={() => setFilters({ ...EMPTY_DISCOVER_FILTERS, genres: [], excludedGenres: [] })}>Limpar filtros</button></div>
       <fieldset className="discover-genres">
         <legend>Gêneros <small>{filters.genreMode === 'any' ? 'Basta combinar com um deles.' : 'Todos os escolhidos devem combinar.'}</small></legend>
         <div>{DISCOVER_GENRES.map((genre) => <button key={genre} type="button" aria-pressed={filters.genres.includes(genre)} className={filters.genres.includes(genre) ? 'active' : ''} onClick={() => toggleGenre(genre)}>{genreLabel(genre)}</button>)}</div>
@@ -227,17 +278,20 @@ export default function Discover({ entries, user, getStatus, onFavorite, onToggl
         <label className="discover-exclude"><input type="checkbox" checked={filters.excludeCompleted} disabled={filters.excludeSaved} onChange={(event) => updateFilter('excludeCompleted', event.target.checked)} /> Ocultar os que já concluí</label>
         <label className="discover-exclude"><input type="checkbox" checked={filters.avoidUnstartedSequels} onChange={(event) => updateFilter('avoidUnstartedSequels', event.target.checked)} /> Evitar continuações cuja temporada anterior não concluí</label>
       </div>}
-      <div className="discover-builder__actions"><button type="button" onClick={search} disabled={loading || loadingMore}>{loading ? 'Buscando animes…' : 'Encontrar animes →'}</button><span>Resultados da AniList; nenhuma conta necessária para pesquisar.</span></div>
+      <div className="discover-builder__actions"><button type="button" onClick={() => search()} disabled={loading || loadingMore}>{loading ? 'Buscando animes…' : 'Encontrar animes →'}</button><span>Resultados da AniList; nenhuma conta necessária para pesquisar.</span></div>
     </div>
 
-    {error && <p className="discover-message discover-message--error" role="alert">⚠️ {error} <button type="button" onClick={search}>Tentar novamente</button></p>}
+    {(!result || hasUnappliedChanges) && <button className="discover-mobile-search" type="button" onClick={() => search()} disabled={loading || loadingMore}>{loading ? 'Buscando…' : 'Encontrar animes →'}</button>}
+
+    {error && <p className="discover-message discover-message--error" role="alert">⚠️ {error} <button type="button" onClick={() => search()}>Tentar novamente</button></p>}
     {loading && <div className="discover-message" role="status"><div className="loader" /> Buscando sugestões que combinam com você…</div>}
     {!loading && !error && !result && <div className="discover-message">Escolha os filtros e clique em “Encontrar animes”.</div>}
     {!loading && !error && result && <>
-      <div className="discover-results__heading"><div><p>RESULTADOS</p><h3>{matches.length} {matches.length === 1 ? 'anime carregado' : 'animes carregados'}{result.nextPage ? ' até agora' : ''}</h3></div><button type="button" onClick={surprise} disabled={!matches.length}>✦ Surpreenda-me</button></div>
+      <div className="discover-results__heading"><div><p>RESULTADOS</p><h3>{matches.length} {matches.length === 1 ? 'anime carregado' : 'animes carregados'}{result.nextPage ? ' até agora' : ''}</h3></div><div className="discover-results__tools"><button type="button" onClick={surprise} disabled={!matches.length}>✦ Surpreenda-me</button><button type="button" onClick={share}>Compartilhar busca</button></div></div>
+      {shareMessage && <p className="discover-note" role="status">{shareMessage}</p>}
       {hasUnappliedChanges && <p className="discover-note">Você alterou os filtros. Clique em “Encontrar animes” para aplicar as mudanças.</p>}
       {spotlight && <article className="discover-spotlight"><img src={spotlight.coverImage || FALLBACK_IMAGE} alt="" /><div><p>SUA SURPRESA</p><h4>{spotlight.title}</h4><span>★ {formatScore(spotlight.score) || 'Sem nota'}{spotlight.score ? '/10' : ''}</span><button type="button" onClick={() => onAnimeClick(spotlight)}>Ver detalhes</button></div><button type="button" className="discover-spotlight__close" onClick={() => setSpotlight(null)} aria-label="Fechar surpresa">×</button></article>}
-      {matches.length === 0 ? <div className="discover-message">Nenhum título encontrado nas páginas consultadas. {result.nextPage ? 'Você pode buscar mais páginas da AniList.' : 'Experimente filtros menos específicos.'}</div> : <div className="discover-grid">{matches.slice(0, visibleCount).map((anime) => <DiscoverCard key={anime.id} anime={anime} filters={appliedFilters} getStatus={getStatus} onFavorite={onFavorite} onToggle={onToggle} onAnimeClick={onAnimeClick} />)}</div>}
+      {matches.length === 0 ? <div className="discover-message">Nenhum título encontrado nas páginas consultadas. {result.nextPage ? 'Você pode buscar mais páginas da AniList.' : 'Experimente filtros menos específicos.'}</div> : <div className="discover-grid">{matches.slice(0, visibleCount).map((anime) => <DiscoverCard key={anime.id} anime={anime} filters={appliedFilters} getStatus={getStatus} onFavorite={onFavorite} onToggle={onToggle} onPlan={onPlan} onAnimeClick={onAnimeClick} />)}</div>}
       {pageError && <p className="discover-note" role="alert">{pageError} Tente carregar mais novamente.</p>}
       {(visibleCount < matches.length || result.nextPage) && <button className="discover-more" type="button" onClick={loadMore} disabled={loadingMore || hasUnappliedChanges}>{loadingMore ? 'Consultando mais páginas…' : visibleCount < matches.length ? 'Mostrar mais sugestões' : 'Buscar mais na AniList'}</button>}
       <p className="discover-footnote">Consultamos {result.candidatesChecked} títulos em {result.pagesChecked} {result.pagesChecked === 1 ? 'página' : 'páginas'} da AniList. Isso não é o total do catálogo. Os links de streaming não garantem disponibilidade no Brasil.</p>

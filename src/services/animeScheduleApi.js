@@ -246,10 +246,23 @@ export async function getMonthlyMovies(date = new Date()) {
 }
 
 export async function getYearlyMovies(year) {
-  const [scheduledMonths, announcedMovies] = await Promise.all([
-    Promise.all(Array.from({ length: 12 }, (_, month) => getMonthlyMovies(new Date(year, month, 1)))),
-    getAniListMoviesByYear(year),
-  ])
+  const scheduledTask = async () => {
+    const months = Array.from({ length: 12 }, () => [])
+    let successfulMonths = 0
+    // Lotes pequenos evitam disparar doze requisições simultâneas à mesma API.
+    for (let first = 0; first < 12; first += 3) {
+      const batch = await Promise.allSettled(Array.from({ length: 3 }, (_, offset) => getMonthlyMovies(new Date(year, first + offset, 1))))
+      batch.forEach((result, offset) => {
+        if (result.status === 'fulfilled') { months[first + offset] = result.value; successfulMonths += 1 }
+      })
+    }
+    return { months, successfulMonths }
+  }
+  const [scheduledResult, announcedResult] = await Promise.allSettled([scheduledTask(), getAniListMoviesByYear(year)])
+  const scheduledMonths = scheduledResult.status === 'fulfilled' ? scheduledResult.value.months : Array.from({ length: 12 }, () => [])
+  const successfulMonths = scheduledResult.status === 'fulfilled' ? scheduledResult.value.successfulMonths : 0
+  const announcedMovies = announcedResult.status === 'fulfilled' ? announcedResult.value : []
+  if (!successfulMonths && announcedResult.status === 'rejected') throw new Error('Não foi possível consultar as fontes de filmes agora.')
 
   const months = scheduledMonths.map((movies) => [...movies])
   const scheduledIds = new Set(months.flat().map((movie) => movie.anilistId))
@@ -268,13 +281,18 @@ export async function getYearlyMovies(year) {
       coverImage: movie.coverImage?.large || movie.coverImage?.medium,
       status: movie.status,
       releaseDateOnly: true,
+      releaseDayKnown: Boolean(movie.startDate.day),
       timeEstimated: false,
       streams: [],
     })
   })
 
-  return months.map((movies, month) => ({
-    month,
-    movies: movies.sort((a, b) => new Date(a.episodeDate) - new Date(b.episodeDate)),
-  }))
+  return {
+    partial: successfulMonths < 12 || announcedResult.status === 'rejected',
+    months: months.map((movies, month) => ({
+      month,
+      movies: movies.sort((a, b) => Number(Boolean(a.releaseDateOnly && !a.releaseDayKnown)) - Number(Boolean(b.releaseDateOnly && !b.releaseDayKnown))
+        || new Date(a.episodeDate) - new Date(b.episodeDate)),
+    })),
+  }
 }

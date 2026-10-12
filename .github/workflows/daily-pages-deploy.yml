@@ -1,9 +1,6 @@
 name: Deploy diário do AniCal
 
 on:
-  schedule:
-    # 12:00 em São Paulo (BRT, UTC-3) = 15:00 UTC.
-    - cron: '0 15 * * *'
   workflow_dispatch:
 
 permissions:
