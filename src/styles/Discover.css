@@ -14,11 +14,22 @@
 .discover-genres > div { display: flex; flex-wrap: wrap; gap: .45rem; }
 .discover-genres button { min-height: 36px; padding: .4rem .7rem; border: 1px solid #49414e; border-radius: 99px; background: #211f2b; color: #d3cad1; cursor: pointer; font: inherit; font-size: .78rem; }
 .discover-genres button.active { border-color: #dfaa75; background: #6b342f; color: white; }
+.discover-genres--exclude { margin-top: 1rem; }
+.discover-genres--exclude button.active { border-color: #e8989a; background: #632b38; }
 .discover-fields { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .9rem; }
 .discover-fields label { display: grid; gap: .35rem; color: #aaa2aa; font-size: .72rem; font-weight: 700; }
 .discover-fields select, .discover-fields input { width: 100%; min-width: 0; min-height: 43px; padding: .5rem .65rem; border: 1px solid #49414e; border-radius: 8px; background: #100f1a; color: #f0e9e9; font: inherit; font-size: .84rem; }
+.discover-fields select:disabled { opacity: .55; }
+.discover-advanced { border-top: 1px solid #39313c; padding-top: 1rem; }
+.discover-advanced summary { width: fit-content; color: #e2b58b; cursor: pointer; font-size: .85rem; font-weight: 700; }
+.discover-advanced[open] > .discover-fields { margin-top: 1rem; }
+.discover-hint { margin-top: -.5rem; color: #b7abb1; font-size: .75rem; line-height: 1.5; }
+.discover-advanced .discover-hint { margin: .8rem 0 0; }
+.discover-personal { display: grid; gap: .55rem; border-top: 1px solid #39313c; padding-top: 1rem; }
+.discover-personal > p { color: #e9c19d; font-size: .83rem; font-weight: 700; }
 .discover-exclude { display: flex; align-items: center; gap: .6rem; color: #d5cdd1; font-size: .82rem; }
 .discover-exclude input { accent-color: #b45348; width: 17px; height: 17px; }
+.discover-exclude:has(input:disabled) { opacity: .52; }
 .discover-builder__actions { justify-content: flex-start; flex-wrap: wrap; }
 .discover-builder__actions > button, .discover-results__heading button, .discover-more { min-height: 43px; padding: .6rem 1rem; border: 0; border-radius: 8px; background: #aa4339; color: white; cursor: pointer; font: inherit; font-size: .84rem; font-weight: 700; }
 .discover-builder__actions > button:disabled { opacity: .6; cursor: wait; }
@@ -55,6 +66,7 @@
 .discover-card__actions { display: flex; gap: .3rem; margin-top: auto; }
 .discover-card__actions button { min-height: 32px; padding: .35rem .55rem; border: 1px solid #74534c; border-radius: 6px; background: #382a30; color: #f2d3c1; cursor: pointer; font: inherit; font-size: .72rem; }
 .discover-more { justify-self: center; background: #6c4c42; }
+.discover-more:disabled { opacity: .55; cursor: default; }
 .discover-page button:hover:not(:disabled) { filter: brightness(1.16); }
 .discover-page button:focus-visible, .discover-page select:focus-visible, .discover-page input:focus-visible { outline: 2px solid #efbb75; outline-offset: 2px; }
 @media (max-width: 1100px) { .discover-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
